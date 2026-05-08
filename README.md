@@ -2,10 +2,13 @@
 
 A simple attendance monitoring system with a React + Tailwind frontend on port 5000 and a PHP/MySQL backend on XAMPP Apache port 80.
 
+The Node.js backend migration has started in `backend/node-api/` as a separate scaffold so the existing PHP API can stay online while we port routes one slice at a time.
+
 ## Project Structure
 
 - `frontend/` - React app for instructors and students.
 - `backend/api/` - PHP JSON API.
+- `backend/node-api/` - Node.js API scaffold for the migration.
 - `database/schema.sql` - MySQL schema.
 
 ## Features
@@ -76,6 +79,7 @@ Credentials created:
 - Frontend runs on port 5000.
 - Backend runs through XAMPP Apache on port 80.
 - Manual self-attendance is supported for open sessions.
+- Node.js backend work now lives in `backend/node-api/` and will replace the PHP API route by route.
 
 ## UI Progress
 

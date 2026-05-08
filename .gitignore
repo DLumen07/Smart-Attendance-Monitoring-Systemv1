@@ -1,0 +1,16 @@
+# Secrets and local environment files
+.env
+.env.*
+backend/api/.env
+backend/node-api/.env
+frontend/.env
+
+# Node and build outputs
+**/node_modules
+**/dist
+**/coverage
+
+# Local scratch files
+frontend/design.cjs
+frontend/diff.txt
+frontend/rewrite.js
