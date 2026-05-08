@@ -24,6 +24,13 @@ npm install
 npm run dev
 ```
 
+Optional checks:
+
+```bash
+npm run db:check
+npm run smoke:auth
+```
+
 4. The API should be reachable at `http://localhost:3001` (unless you changed `PORT`).
 
 Notes:

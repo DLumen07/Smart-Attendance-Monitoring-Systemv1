@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
-    "check": "node --check src/server.js && node --check src/app.js && node --check src/routes/auth.js && node --check src/routes/health.js"
+    "check": "node --check src/server.js && node --check src/app.js && node --check src/routes/auth.js && node --check src/routes/health.js",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down -v",
+    "db:check": "node scripts/db-check.js",
+    "smoke:auth": "node scripts/smoke-auth.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

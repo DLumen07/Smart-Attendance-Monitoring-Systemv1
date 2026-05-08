@@ -56,6 +56,29 @@ The Node.js backend migration has started in `backend/node-api/` as a separate s
    npm run dev
    ```
 
+## Node API (PostgreSQL, migration)
+
+This is optional while the PHP API remains live. The Node API runs separately from `backend/node-api/`.
+
+1. Start Postgres (Docker):
+   ```bash
+   cd backend/node-api
+   docker compose up -d
+   ```
+2. Copy `.env.example` to `.env` and set `DATABASE_URL` to:
+   ```
+   postgresql://postgres:password@localhost:5432/smart_attendance
+   ```
+3. Install dependencies and run the API:
+   ```bash
+   npm install
+   npm run dev
+   ```
+4. Optional smoke test:
+   ```bash
+   npm run smoke:auth
+   ```
+
 ## Hosting Notes (InfinityFree)
 
 - Set database credentials in `backend/api/.env` using `DB_HOST`, `DB_NAME`, `DB_USER`, and `DB_PASS`.
