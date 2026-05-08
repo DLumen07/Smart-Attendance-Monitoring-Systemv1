@@ -10,6 +10,9 @@ export default function RegisterPage() {
     email: '',
     password: '',
     role: 'student',
+    parentName: '',
+    parentEmail: '',
+    parentPhone: '',
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -75,6 +78,38 @@ export default function RegisterPage() {
             <option value="instructor">Instructor</option>
           </select>
         </label>
+        {form.role === 'student' && (
+          <div className="rounded-lg border border-slate-200 bg-slate-50/40 p-4 space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Parent or guardian (optional)</p>
+            <label className="block text-sm font-medium">
+              Parent name
+              <input
+                type="text"
+                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                value={form.parentName}
+                onChange={(event) => setForm((prev) => ({ ...prev, parentName: event.target.value }))}
+              />
+            </label>
+            <label className="block text-sm font-medium">
+              Parent email
+              <input
+                type="email"
+                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                value={form.parentEmail}
+                onChange={(event) => setForm((prev) => ({ ...prev, parentEmail: event.target.value }))}
+              />
+            </label>
+            <label className="block text-sm font-medium">
+              Parent phone
+              <input
+                type="text"
+                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                value={form.parentPhone}
+                onChange={(event) => setForm((prev) => ({ ...prev, parentPhone: event.target.value }))}
+              />
+            </label>
+          </div>
+        )}
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
         <button type="submit" disabled={loading} className="w-full rounded-md bg-brand px-3 py-2 font-semibold text-white">
           {loading ? 'Creating...' : 'Create account'}

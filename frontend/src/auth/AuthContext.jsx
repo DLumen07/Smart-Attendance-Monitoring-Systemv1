@@ -42,11 +42,7 @@ export function AuthProvider({ children }) {
   const logout = () => {
     sessionStorage.removeItem(TOKEN_KEY)
     sessionStorage.removeItem(USER_KEY)
-    
-    // Also clean up any lingering old localStorage tokens just in case
-    localStorage.removeItem(TOKEN_KEY)
-    localStorage.removeItem(USER_KEY)
-    
+
     setUser(null)
   }
 

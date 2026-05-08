@@ -1,5 +1,6 @@
 import { useEffect, useId, useState } from 'react'
 import { Html5Qrcode } from 'html5-qrcode'
+import { Camera, CameraOff } from 'lucide-react'
 
 export default function QrScanner({ onCode }) {
   const [isScanning, setIsScanning] = useState(false)
@@ -37,18 +38,35 @@ export default function QrScanner({ onCode }) {
   }, [isScanning, elementId, onCode])
 
   return (
-    <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
-      <div className="flex flex-wrap gap-2">
+    <div className="flex h-full w-full flex-col items-center justify-center py-2">
+      <div className="flex w-full flex-col items-center justify-center">
+        {!isScanning && (
+          <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-[24px] bg-[#f0f5f2] border border-[#e2ede7]">
+            <Camera className="h-8 w-8 text-[#18563e] opacity-80" />
+          </div>
+        )}
         <button
           type="button"
           onClick={() => setIsScanning((prev) => !prev)}
-          className="rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white hover:opacity-90"
+          className="flex items-center gap-2 rounded-[14px] bg-[#18563e] px-6 py-3 text-[13px] font-semibold text-white shadow-[0_4px_16px_rgba(24,86,62,0.2)] transition-all hover:bg-[#11402e] hover:shadow-[0_4px_12px_rgba(17,64,46,0.3)] hover:-translate-y-[1px] active:translate-y-[1px] active:shadow-none"
         >
-          {isScanning ? 'Stop scanner' : 'Scan QR with camera'}
+          {isScanning ? (
+             <>
+               <CameraOff className="h-4 w-4" />
+               Stop Scanner
+             </>
+          ) : (
+             <>
+               <Camera className="h-4 w-4" />
+               Scan with Camera
+             </>
+          )}
         </button>
       </div>
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
-      <div id={elementId} className={isScanning ? 'w-full max-w-xs' : 'hidden'} />
+      {error && <p className="mt-4 text-center text-[12px] font-medium text-rose-500 bg-rose-50 px-3 py-2 rounded-[8px]">{error}</p>}
+      <div className={isScanning ? 'mt-6 flex w-full justify-center' : 'hidden'}>
+        <div id={elementId} className="w-full max-w-[240px] overflow-hidden rounded-[20px] shadow-[0_4px_24px_rgba(0,0,0,0.06)] border-[4px] border-white bg-slate-50" />
+      </div>
     </div>
   )
 }

@@ -5,8 +5,12 @@ import AppShell from './components/AppShell'
 import ProtectedRoute from './components/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 import InstructorDashboard from './pages/instructor/InstructorDashboard'
 import StudentDashboard from './pages/student/StudentDashboard'
+import StudentClasses from './pages/student/StudentClasses'
+import StudentClassDetail from './pages/student/StudentClassDetail'
 import NotFoundPage from './pages/NotFoundPage'
 
 function RoleLanding() {
@@ -17,12 +21,14 @@ function RoleLanding() {
 export default function App() {
   return (
     <AuthProvider>
-      <Toaster position="top-right" />
+      <Toaster position="bottom-right" />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<RoleLanding />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route
             path="/instructor"
             element={
@@ -49,6 +55,26 @@ export default function App() {
               <ProtectedRoute role="student">
                 <AppShell>
                   <StudentDashboard />
+                </AppShell>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/classes"
+            element={
+              <ProtectedRoute role="student">
+                <AppShell>
+                  <StudentClasses />
+                </AppShell>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/classes/:classId"
+            element={
+              <ProtectedRoute role="student">
+                <AppShell>
+                  <StudentClassDetail />
                 </AppShell>
               </ProtectedRoute>
             }
