@@ -1,104 +1,88 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Mail, ArrowRight, AlertCircle, CheckCircle } from 'lucide-react'
+import AuthLayout from '../auth/AuthLayout'
+import { Mail, CheckCircle } from 'lucide-react'
 import { apiRequest } from '../api/client'
+import { Link } from 'react-router-dom'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
-  const [error, setError] = useState('')
-  const [message, setMessage] = useState('')
+  const [status, setStatus] = useState('')
   const [loading, setLoading] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
 
-  const onSubmit = async (event) => {
-    event.preventDefault()
-    setError('')
-    setMessage('')
+  const onSubmit = async (e) => {
+    e.preventDefault()
+    setStatus('')
     setLoading(true)
-
     try {
-      const response = await apiRequest('/auth/forgot-password', {
+      await apiRequest('/auth/forgot-password', {
         method: 'POST',
         body: JSON.stringify({ email }),
       })
-      setMessage(response.message || 'If the email exists, a reset code has been sent.')
-    } catch (submitError) {
-      setError(submitError.message)
+      setStatus('If an account exists, a reset code has been sent to that email.')
+      setSubmitted(true)
+    } catch (err) {
+      setStatus(err.message || 'Request failed')
     } finally {
       setLoading(false)
     }
   }
 
-  return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)]">
-      <div className="w-full max-w-md p-8 bg-white rounded-xl shadow-lg border border-slate-100">
-        <div className="mb-8 text-center">
-          <div className="mx-auto w-12 h-12 bg-brand/10 text-brand rounded-full flex items-center justify-center mb-4">
-            <Mail className="w-6 h-6" />
-          </div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">Forgot Password</h1>
-          <p className="text-slate-500 text-sm">Enter your email to receive a reset code.</p>
-        </div>
+  const input = 'w-full pl-11 pr-4 h-12 bg-slate-50/50 border border-slate-200 text-ink placeholder-slate-400 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all duration-200 text-[14px] font-medium'
 
-        <form className="space-y-5" onSubmit={onSubmit}>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-slate-400" />
+  if (submitted) {
+    return (
+      <AuthLayout title="Check Your Email" subtitle={`We sent a reset code to ${email}`}>
+         <div className="text-center space-y-6">
+            <div className="flex justify-center">
+              <div className="w-16 h-16 bg-brand/10 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-8 h-8 text-brand" />
               </div>
-              <input
-                required
-                type="email"
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-brand/50 focus:border-brand focus:bg-white transition-all duration-200"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-              />
             </div>
-          </div>
+            
+            <p className="text-sm text-slate-500">
+               Didn't receive the code? Check your spam folder or try resetting again.
+            </p>
 
-          {error && (
-            <div className="p-4 bg-red-50/50 border border-red-100 rounded-lg flex items-start space-x-3">
-              <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
-              <p className="text-sm text-red-700 font-medium">{error}</p>
-            </div>
-          )}
-
-          {message && (
-            <div className="p-4 bg-emerald-50/50 border border-emerald-100 rounded-lg flex items-start space-x-3">
-              <CheckCircle className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
-              <p className="text-sm text-emerald-700 font-medium">{message}</p>
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full relative flex items-center justify-center py-2.5 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-brand hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand transition-all duration-200 active:scale-[0.98] shadow-md shadow-brand/20 disabled:opacity-70 disabled:cursor-not-allowed group"
-          >
-            <span>{loading ? 'Sending...' : 'Send Reset Code'}</span>
-            {!loading && <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />}
-          </button>
-        </form>
-
-        <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-          <p className="text-sm text-slate-500">
-            Ready to reset?{' '}
             <Link
-              to={email ? `/reset-password?email=${encodeURIComponent(email)}` : '/reset-password'}
-              className="font-semibold text-brand hover:text-brand-600 hover:underline transition-all"
+               to={`/reset-password?email=${encodeURIComponent(email)}`}
+               className="w-full h-12 flex items-center justify-center bg-brand hover:bg-teal-800 text-white font-bold rounded-full transition-all duration-200 shadow-xl shadow-brand/20 text-[14px]"
             >
-              Enter your code
+               Enter Reset Code
             </Link>
-          </p>
-          <p className="text-sm text-slate-500 mt-2">
-            Remembered your password?{' '}
-            <Link to="/login" className="font-semibold text-brand hover:text-brand-600 hover:underline transition-all">
-              Sign in
-            </Link>
-          </p>
+
+            <button
+               onClick={() => { setSubmitted(false); setStatus(''); }}
+               className="w-full h-12 text-slate-500 hover:text-ink font-bold transition-colors text-[14px]"
+            >
+               Use Different Email
+            </button>
+         </div>
+      </AuthLayout>
+    )
+  }
+
+  return (
+    <AuthLayout title="Reset Password" subtitle="Enter your account email to receive a reset code">
+      <form onSubmit={onSubmit} className="space-y-4">
+        <div>
+          <label className="block text-[13px] font-bold text-ink mb-2">Email</label>
+          <div className="relative">
+            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <input required type="email" className={input} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@mail.com" />
+          </div>
         </div>
+
+        {status && <div className="text-[13px] text-rose-600 font-medium">{status}</div>}
+
+        <button type="submit" disabled={loading} className="w-full h-12 bg-brand hover:bg-teal-800 text-white rounded-full font-bold transition-colors">
+            {loading ? 'Sending code...' : 'Send reset code'}
+        </button>
+      </form>
+
+      <div className="mt-6 text-center text-sm text-slate-500">
+         Remembered? <Link to="/login" className="font-semibold text-brand hover:text-teal-800 transition-colors">Sign in</Link>
       </div>
-    </div>
+    </AuthLayout>
   )
 }

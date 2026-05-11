@@ -34,25 +34,6 @@ npm run smoke:reset
 npm run smoke:classes
 ```
 
-MySQL to Postgres migration (optional):
-
-1. Set MySQL connection info in `.env`:
-
-```
-MYSQL_HOST=localhost
-MYSQL_PORT=3306
-MYSQL_USER=root
-MYSQL_PASSWORD=
-MYSQL_DATABASE=smart_attendance
-MIGRATE_TRUNCATE=true
-```
-
-2. Run the migration:
-
-```bash
-npm run migrate:mysql
-```
-
 4. The API should be reachable at `http://localhost:3001` (unless you changed `PORT`).
 
 Notes:
