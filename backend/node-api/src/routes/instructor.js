@@ -7,6 +7,7 @@ import {
   assertInstructorOwnsSession,
 } from '../middleware/auth.js'
 import { makeCode } from '../utils/code.js'
+import { handleConsecutiveAbsenceAlerts } from '../services/attendance-alerts.js'
 
 const instructorRouter = Router()
 
@@ -280,9 +281,19 @@ instructorRouter.patch('/sessions/:sessionId/status', async (request, response) 
   try {
     await assertInstructorOwnsSession(sessionId, request.user.id)
     await query(
-      'UPDATE sessions SET status = $1, ends_at = CASE WHEN $1 = $2 THEN NOW() ELSE NULL END WHERE id = $3',
-      [status, 'closed', sessionId]
+      "UPDATE sessions SET status = $1, ends_at = CASE WHEN $2 = 'closed' THEN NOW() ELSE NULL END WHERE id = $3",
+      [status, status, sessionId]
     )
+
+    if (status === 'closed') {
+      response.status(200).json({ message: 'Session updated' })
+      setImmediate(() => {
+        handleConsecutiveAbsenceAlerts(sessionId).catch((error) => {
+          console.error('Attendance alert error:', error?.message || error)
+        })
+      })
+      return
+    }
 
     response.status(200).json({ message: 'Session updated' })
   } catch (error) {

@@ -15,6 +15,7 @@ export const config = {
   databaseUrl: process.env.DATABASE_URL || '',
   jwtSecret: process.env.JWT_SECRET || 'replace-this-in-production',
   mailEnabled: (process.env.MAIL_ENABLED || 'true').toLowerCase() === 'true',
+  attendanceEmailEnabled: (process.env.ATTENDANCE_EMAIL_ENABLED || 'false').toLowerCase() === 'true',
   mailFrom: process.env.MAIL_FROM || 'noreply@smart-attendance.local',
   mailFromName: process.env.MAIL_FROM_NAME || 'Smart Attendance Monitoring',
   mailReplyTo: process.env.MAIL_REPLY_TO || '',

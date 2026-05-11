@@ -82,7 +82,14 @@ This is optional while the PHP API remains live. The Node API runs separately fr
    npm run smoke:classes
    ```
    Forgot-password needs SMTP configured (`SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`) or it returns 503.
+   Attendance alerts (3 consecutive absences) require `ATTENDANCE_EMAIL_ENABLED=true`, SMTP config, and parent emails on student records.
    If you created the DB before adding class/session tables, run `backend/node-api/sql/patch-core.sql` and `backend/node-api/sql/patch-auth.sql` once.
+
+5. Optional MySQL -> Postgres migration (to move existing PHP data):
+   ```bash
+   # configure MYSQL_* and MIGRATE_TRUNCATE=true in backend/node-api/.env
+   npm --prefix backend/node-api run migrate:mysql
+   ```
 
 ## Hosting Notes (InfinityFree)
 

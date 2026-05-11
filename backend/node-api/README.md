@@ -28,9 +28,29 @@ Optional checks:
 
 ```bash
 npm run db:check
+npm run seed:demo
 npm run smoke:auth
 npm run smoke:reset
 npm run smoke:classes
+```
+
+MySQL to Postgres migration (optional):
+
+1. Set MySQL connection info in `.env`:
+
+```
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER=root
+MYSQL_PASSWORD=
+MYSQL_DATABASE=smart_attendance
+MIGRATE_TRUNCATE=true
+```
+
+2. Run the migration:
+
+```bash
+npm run migrate:mysql
 ```
 
 4. The API should be reachable at `http://localhost:3001` (unless you changed `PORT`).
@@ -41,4 +61,5 @@ Notes:
 - If you run Postgres elsewhere, update `DATABASE_URL` accordingly.
 - If you see `ECONNREFUSED ::1`, use `127.0.0.1` in `DATABASE_URL` to avoid IPv6 loopback issues.
 - Forgot-password requires SMTP settings (`SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`) or it will return 503.
+- Attendance alert emails (3 consecutive absences) require `ATTENDANCE_EMAIL_ENABLED=true`, SMTP settings, and parent emails on student records.
 - The `auth` routes now include register/login plus forgot/reset password with reset codes.

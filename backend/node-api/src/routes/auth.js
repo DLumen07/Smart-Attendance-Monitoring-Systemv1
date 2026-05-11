@@ -186,14 +186,13 @@ authRouter.post('/login', async (request, response) => {
   }
 })
 
-// TODO: Implement forgot-password and reset-password flows (email + tokens)
 authRouter.post('/forgot-password', async (request, response) => {
   const email = String(request.body?.email || '').trim().toLowerCase()
   if (!email) {
     return response.status(422).json({ message: 'Email is required' })
   }
 
-  if (!isEmailConfigured()) {
+  if (!config.mailEnabled || !isEmailConfigured()) {
     return response.status(503).json({ message: 'Email delivery is not configured' })
   }
 
