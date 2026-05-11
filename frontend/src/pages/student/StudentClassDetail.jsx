@@ -322,7 +322,7 @@ export default function StudentClassDetail() {
             </div>
           </div>
 
-          <div className="bg-white rounded-[22px] p-5 lg:p-6 border border-black/5 shadow-[0_2px_10px_rgba(0,0,0,0.02)] flex flex-col">
+          <div className="bg-white rounded-[22px] p-5 lg:p-6 shadow-[0_2px_10px_rgba(0,0,0,0.02)] flex flex-col">
             <div className="flex items-start justify-between gap-4 mb-2">
               <div>
                 <h3 className="text-[16px] font-semibold text-[#111] flex items-center gap-2">
@@ -333,13 +333,13 @@ export default function StudentClassDetail() {
                 </h3>
                 <p className="text-[12px] text-[#666] mt-1">Overall and recent performance tracking</p>
               </div>
-              <div className="bg-slate-50 px-3 py-1 rounded-[10px] border border-black/5 text-[11px] font-semibold text-[#888]">
+              <div className="bg-slate-50 px-3 py-1 rounded-[10px] text-[11px] font-semibold text-[#888]">
                 {sessions.length} TOTAL SESSIONS
               </div>
             </div>
 
             <div className="flex-1 mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="rounded-[20px] bg-gradient-to-br from-[#f0f5f2] to-[#f8faf9] border border-[#e2ede7] p-5 flex flex-col items-center justify-center relative overflow-hidden">
+              <div className="rounded-[20px] bg-gradient-to-br from-[#f0f5f2] to-[#f8faf9] p-5 flex flex-col items-center justify-center relative overflow-hidden">
                 {/* SVG Circular Progress */}
                 <div className="relative w-32 h-32 flex items-center justify-center">
                   <svg className="w-full h-full transform -rotate-90">
@@ -356,10 +356,10 @@ export default function StudentClassDetail() {
                 </div>
               </div>
 
-              <div className="rounded-[20px] border border-black/5 p-4 bg-white flex flex-col justify-center">
+              <div className="rounded-[20px] p-4 bg-white flex flex-col justify-center">
                 <div className="flex items-center justify-between mb-4">
                   <p className="text-[12px] font-semibold text-[#888] uppercase tracking-wide">Last {recentPerformance.total} Sessions</p>
-                  <span className="px-2 py-0.5 rounded-md bg-slate-50 border border-black/5 text-[11px] font-medium">{recentPerformance.rate}% Trend</span>
+                  <span className="px-2 py-0.5 rounded-md bg-slate-50 text-[11px] font-medium">{recentPerformance.rate}% Trend</span>
                 </div>
                 <div className="space-y-3 flex-1 flex flex-col justify-center">
                   {[
@@ -389,15 +389,15 @@ export default function StudentClassDetail() {
             </div>
 
             <div className="grid grid-cols-3 gap-3 mt-4">
-              <div className="rounded-[16px] border border-[#e2ede7] bg-[#f8fbfa] p-4 flex flex-col items-center justify-center text-center">
+              <div className="rounded-[16px] bg-[#f8fbfa] p-4 flex flex-col items-center justify-center text-center">
                 <p className="text-[20px] font-bold text-[#18563e]">{performance.present}</p>
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-[#18563e]/70 mt-0.5">Present</p>
               </div>
-              <div className="rounded-[16px] border border-amber-100 bg-amber-50/50 p-4 flex flex-col items-center justify-center text-center">
+              <div className="rounded-[16px] bg-amber-50/50 p-4 flex flex-col items-center justify-center text-center">
                 <p className="text-[20px] font-bold text-amber-600">{performance.late}</p>
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-amber-600/70 mt-0.5">Late</p>
               </div>
-              <div className="rounded-[16px] border border-rose-100 bg-rose-50/50 p-4 flex flex-col items-center justify-center text-center">
+              <div className="rounded-[16px] bg-rose-50/50 p-4 flex flex-col items-center justify-center text-center">
                 <p className="text-[20px] font-bold text-rose-600">{performance.absent}</p>
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-rose-600/70 mt-0.5">Absent</p>
               </div>

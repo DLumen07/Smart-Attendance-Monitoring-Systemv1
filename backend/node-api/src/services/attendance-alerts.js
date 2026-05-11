@@ -136,6 +136,12 @@ export const handleConsecutiveAbsenceAlerts = async (sessionId) => {
       continue
     }
 
+    const previous = recentResult.rows[3]
+    const previouslyAbsent = (previous?.status || '') === 'absent'
+    if (previouslyAbsent) {
+      continue
+    }
+
     await attemptEmailAlert({
       classId: sessionInfo.classId,
       sessionId,
