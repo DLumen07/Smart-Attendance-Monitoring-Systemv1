@@ -14,13 +14,19 @@ const server = app.listen(0, async () => {
   const baseUrl = `http://127.0.0.1:${port}`
   const email = `smoke_${Date.now()}@example.local`
   const password = 'SmokeTest123!'
-  const name = 'Smoke Test'
+  const suffix = Array.from({ length: 5 }, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('')
+  const fullName = `Smoke Test ${suffix}`
 
   try {
     const registerResponse = await fetch(`${baseUrl}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({
+        fullName,
+        email,
+        password,
+        role: 'student',
+      }),
     })
 
     const registerBody = await registerResponse.json().catch(() => ({}))

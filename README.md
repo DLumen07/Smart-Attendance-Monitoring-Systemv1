@@ -78,7 +78,9 @@ This is optional while the PHP API remains live. The Node API runs separately fr
 4. Optional smoke test:
    ```bash
    npm run smoke:auth
+   npm run smoke:reset
    ```
+   Forgot-password needs SMTP configured (`SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`) or it returns 503.
 
 ## Hosting Notes (InfinityFree)
 

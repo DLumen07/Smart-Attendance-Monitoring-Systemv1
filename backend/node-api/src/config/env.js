@@ -16,6 +16,7 @@ export const config = {
   jwtSecret: process.env.JWT_SECRET || 'replace-this-in-production',
   mailFrom: process.env.MAIL_FROM || 'noreply@smart-attendance.local',
   mailFromName: process.env.MAIL_FROM_NAME || 'Smart Attendance Monitoring',
+  mailReplyTo: process.env.MAIL_REPLY_TO || '',
   smtpHost: process.env.SMTP_HOST || '',
   smtpPort: Number(process.env.SMTP_PORT || 587),
   smtpUser: process.env.SMTP_USER || '',
