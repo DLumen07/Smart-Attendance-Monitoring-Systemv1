@@ -14,6 +14,7 @@ export const config = {
   corsOrigins: parseList(process.env.CORS_ORIGINS),
   databaseUrl: process.env.DATABASE_URL || '',
   jwtSecret: process.env.JWT_SECRET || 'replace-this-in-production',
+  mailEnabled: (process.env.MAIL_ENABLED || 'true').toLowerCase() === 'true',
   mailFrom: process.env.MAIL_FROM || 'noreply@smart-attendance.local',
   mailFromName: process.env.MAIL_FROM_NAME || 'Smart Attendance Monitoring',
   mailReplyTo: process.env.MAIL_REPLY_TO || '',
@@ -22,4 +23,5 @@ export const config = {
   smtpUser: process.env.SMTP_USER || '',
   smtpPass: process.env.SMTP_PASS || '',
   smtpSecure: (process.env.SMTP_SECURE || 'tls').toLowerCase(),
+  lateCutoffMinutes: Number(process.env.LATE_CUTOFF_MINUTES || 5),
 }

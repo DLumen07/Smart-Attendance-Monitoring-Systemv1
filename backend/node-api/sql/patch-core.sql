@@ -1,18 +1,4 @@
--- PostgreSQL schema for Smart Attendance Node API
-
-CREATE TABLE IF NOT EXISTS users (
-  id BIGSERIAL PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  email VARCHAR(255) NOT NULL UNIQUE,
-  password VARCHAR(255) NOT NULL,
-  role VARCHAR(50) NOT NULL DEFAULT 'student' CHECK (role IN ('instructor', 'student')),
-  parent_name VARCHAR(255) NULL,
-  parent_email VARCHAR(255) NULL,
-  parent_phone VARCHAR(50) NULL,
-  reset_code VARCHAR(12) NULL,
-  reset_code_expires_at TIMESTAMPTZ NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
+-- Create core tables for classes, sessions, attendance
 
 CREATE TABLE IF NOT EXISTS classes (
   id BIGSERIAL PRIMARY KEY,

@@ -79,8 +79,10 @@ This is optional while the PHP API remains live. The Node API runs separately fr
    ```bash
    npm run smoke:auth
    npm run smoke:reset
+   npm run smoke:classes
    ```
    Forgot-password needs SMTP configured (`SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`) or it returns 503.
+   If you created the DB before adding class/session tables, run `backend/node-api/sql/patch-core.sql` and `backend/node-api/sql/patch-auth.sql` once.
 
 ## Hosting Notes (InfinityFree)
 

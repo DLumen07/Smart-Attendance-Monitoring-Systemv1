@@ -35,7 +35,8 @@ const getTransport = () => {
   return cachedTransport
 }
 
-export const isEmailConfigured = () => Boolean(config.smtpHost && config.smtpUser && config.smtpPass)
+export const isEmailConfigured = () =>
+  Boolean(config.mailEnabled && config.smtpHost && config.smtpUser && config.smtpPass)
 
 export const sendEmail = async ({ to, subject, html, text }) => {
   if (!isEmailConfigured()) {
