@@ -6,7 +6,6 @@ A simple attendance monitoring system with a React + Tailwind frontend on port 5
 
 - `frontend/` - React app for instructors and students.
 - `backend/node-api/` - Node.js API.
-- `deploy/frontend/` - Optional static frontend build output.
 
 ## Features
 
@@ -58,6 +57,41 @@ A simple attendance monitoring system with a React + Tailwind frontend on port 5
 - Set `DATABASE_URL` and SMTP settings in `backend/node-api/.env` on your host.
 - Set `VITE_API_BASE_URL` in `frontend/.env` to your live API URL (for example, `https://api.example.com`).
 - Ensure your host supports SPA routing (rewrite all routes to `index.html`).
+
+## Free Demo Deployment (Recommended)
+
+This is the easiest free setup for a capstone demo: **Vercel (frontend) + Render (API) + Neon/Supabase (Postgres)**.
+
+### 1) Database (Neon or Supabase)
+
+- Create a Postgres database.
+- Copy the connection string for later (used as `DATABASE_URL`).
+
+### 2) Backend (Render)
+
+- Create a new **Web Service** from this repo.
+- Root directory: `backend/node-api`
+- Build command: `npm install`
+- Start command: `npm run start`
+- Environment variables:
+   - `DATABASE_URL` = your Neon/Supabase connection string
+   - `JWT_SECRET` = a strong secret
+   - `CORS_ORIGINS` = your frontend URL (from Vercel)
+   - `MAIL_ENABLED` = `true` or `false`
+   - `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, `SMTP_PORT`, `SMTP_SECURE` (only if email is needed)
+
+Render’s free tier sleeps after inactivity, so the first request can be slow.
+
+### 3) Frontend (Vercel)
+
+- Import the same repo into Vercel.
+- Root directory: `frontend`
+- Build command: `npm run build`
+- Output directory: `dist`
+- Environment variable:
+   - `VITE_API_BASE_URL` = your Render API URL (for example, `https://your-api.onrender.com`)
+
+That’s it. Open the Vercel URL to access the demo.
 
 ## Notes
 
