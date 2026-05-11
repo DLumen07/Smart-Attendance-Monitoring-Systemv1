@@ -69,6 +69,7 @@ This is optional while the PHP API remains live. The Node API runs separately fr
    ```
    postgresql://postgres:password@localhost:5432/smart_attendance
    ```
+   If you see `ECONNREFUSED ::1`, use `127.0.0.1` instead of `localhost`.
 3. Install dependencies and run the API:
    ```bash
    npm install
