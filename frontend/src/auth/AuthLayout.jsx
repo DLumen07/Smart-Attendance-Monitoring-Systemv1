@@ -12,7 +12,7 @@ export default function AuthLayout({ children, title, subtitle, wide = false }) 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
-        className={`w-full relative z-10 ${wide ? 'max-w-[700px]' : 'max-w-[420px]'}`}
+        className={`w-full relative z-10 ${wide ? 'max-w-[1120px]' : 'max-w-[420px]'}`}
       >
         <div className="text-center mb-8">
           <div className="flex justify-center mb-6">
@@ -24,7 +24,7 @@ export default function AuthLayout({ children, title, subtitle, wide = false }) 
           {subtitle && <p className="text-slate-500 text-sm font-medium">{subtitle}</p>}
         </div>
 
-        <div className="rounded-[2rem] bg-white border border-slate-200/60 shadow-sm p-8">
+        <div className={`rounded-[2rem] bg-white border border-slate-200/60 shadow-sm ${wide ? 'p-6 sm:p-8 lg:p-10' : 'p-8'}`}>
           {children}
         </div>
       </motion.div>

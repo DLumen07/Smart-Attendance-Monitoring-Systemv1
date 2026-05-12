@@ -5,6 +5,7 @@ import { authRouter } from './routes/auth.js'
 import { healthRouter } from './routes/health.js'
 import { instructorRouter } from './routes/instructor.js'
 import { studentRouter } from './routes/student.js'
+import { adminRouter } from './routes/admin.js'
 
 export function createApp({ allowedOrigins = [] } = {}) {
   const app = express()
@@ -37,6 +38,7 @@ export function createApp({ allowedOrigins = [] } = {}) {
   app.use('/auth', authRouter)
   app.use('/instructor', instructorRouter)
   app.use('/student', studentRouter)
+  app.use('/admin', adminRouter)
 
   app.use((_request, response) => {
     response.status(404).json({ message: 'Route not found' })

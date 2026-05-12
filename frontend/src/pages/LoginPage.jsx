@@ -17,8 +17,12 @@ export default function LoginPage() {
     setLoading(true)
     try {
       await login(form)
-      const user = JSON.parse(sessionStorage.getItem('attendance_user') || 'null')
-      navigate(user?.role === 'instructor' ? '/instructor' : '/student')
+      const user = JSON.parse(localStorage.getItem('attendance_user') || 'null')
+      if (user?.role === 'admin') {
+        navigate('/admin')
+      } else {
+        navigate(user?.role === 'instructor' ? '/instructor' : '/student')
+      }
     } catch (submitError) {
       setError(submitError.message)
     } finally {

@@ -5,12 +5,25 @@ CREATE TABLE IF NOT EXISTS users (
   name VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL UNIQUE,
   password VARCHAR(255) NOT NULL,
-  role VARCHAR(50) NOT NULL DEFAULT 'student' CHECK (role IN ('instructor', 'student')),
+  role VARCHAR(50) NOT NULL DEFAULT 'student' CHECK (role IN ('instructor', 'student', 'admin')),
+  approval_status VARCHAR(20) NOT NULL DEFAULT 'approved' CHECK (approval_status IN ('pending', 'approved', 'rejected')),
   parent_name VARCHAR(255) NULL,
   parent_email VARCHAR(255) NULL,
   parent_phone VARCHAR(50) NULL,
   reset_code VARCHAR(12) NULL,
   reset_code_expires_at TIMESTAMPTZ NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS activity_logs (
+  id BIGSERIAL PRIMARY KEY,
+  actor_user_id BIGINT NULL REFERENCES users(id) ON DELETE SET NULL,
+  action VARCHAR(120) NOT NULL,
+  target_type VARCHAR(60) NULL,
+  target_id VARCHAR(60) NULL,
+  details JSONB NOT NULL DEFAULT '{}'::jsonb,
+  ip_address VARCHAR(64) NULL,
+  user_agent VARCHAR(255) NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

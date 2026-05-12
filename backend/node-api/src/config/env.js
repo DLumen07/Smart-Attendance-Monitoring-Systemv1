@@ -25,4 +25,7 @@ export const config = {
   smtpPass: process.env.SMTP_PASS || '',
   smtpSecure: (process.env.SMTP_SECURE || 'tls').toLowerCase(),
   lateCutoffMinutes: Number(process.env.LATE_CUTOFF_MINUTES || 5),
+  adminEmail: process.env.ADMIN_EMAIL || 'admin@smart-attendance.local',
+  adminPassword: process.env.ADMIN_PASSWORD || 'Admin123!',
+  adminName: process.env.ADMIN_NAME || 'System Administrator',
 }

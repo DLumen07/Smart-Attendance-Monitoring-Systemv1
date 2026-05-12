@@ -11,10 +11,14 @@ import InstructorDashboard from './pages/instructor/InstructorDashboard'
 import StudentDashboard from './pages/student/StudentDashboard'
 import StudentClasses from './pages/student/StudentClasses'
 import StudentClassDetail from './pages/student/StudentClassDetail'
+import AdminDashboard from './pages/admin/AdminDashboard'
 import NotFoundPage from './pages/NotFoundPage'
 
 function RoleLanding() {
   const { user } = useAuth()
+  if (user?.role === 'admin') {
+    return <Navigate to="/admin" replace />
+  }
   return <Navigate to={user?.role === 'instructor' ? '/instructor' : '/student'} replace />
 }
 
@@ -29,6 +33,16 @@ export default function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute role="admin">
+                <AppShell>
+                  <AdminDashboard />
+                </AppShell>
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/instructor"
             element={

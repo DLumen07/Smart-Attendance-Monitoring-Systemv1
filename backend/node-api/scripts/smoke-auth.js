@@ -1,10 +1,13 @@
 import { createApp } from '../src/app.js'
 import { config } from '../src/config/env.js'
+import { ensureDatabasePatches } from '../src/db/migrate.js'
 
 if (!config.databaseUrl) {
   console.error('DATABASE_URL is not set. Copy .env.example to .env or set it in your shell.')
   process.exit(1)
 }
+
+await ensureDatabasePatches()
 
 const app = createApp({ allowedOrigins: [] })
 

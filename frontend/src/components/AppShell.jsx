@@ -23,10 +23,18 @@ export default function AppShell({ children }) {
   const handleNavClick = (navItem) => {
     setActiveNav(navItem)
     if (navItem === 'dashboard') {
+      if (user?.role === 'admin') {
+        navigate('/admin')
+        return
+      }
       navigate(user?.role === 'instructor' ? '/instructor' : '/student')
       return
     }
     if (navItem === 'classes') {
+      if (user?.role === 'admin') {
+        navigate('/admin')
+        return
+      }
       if (user?.role === 'student') {
         navigate('/student/classes')
         return
@@ -55,6 +63,15 @@ export default function AppShell({ children }) {
       return
     }
     if (location.pathname.startsWith('/student')) {
+      setActiveNav('dashboard')
+    }
+  }, [location.pathname, user?.role])
+
+  useEffect(() => {
+    if (user?.role !== 'admin') {
+      return
+    }
+    if (location.pathname.startsWith('/admin')) {
       setActiveNav('dashboard')
     }
   }, [location.pathname, user?.role])
@@ -130,7 +147,7 @@ export default function AppShell({ children }) {
 
           <nav className="flex flex-col gap-2 w-full pt-1">
             <NavItem id="dashboard" icon={LayoutDashboard} label="Dashboard" />
-            <NavItem id="classes" icon={Briefcase} label="Classes" />
+            {user?.role !== 'admin' && <NavItem id="classes" icon={Briefcase} label="Classes" />}
           </nav>
         </div>
 

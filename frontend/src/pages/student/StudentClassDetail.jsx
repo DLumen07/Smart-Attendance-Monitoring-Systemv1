@@ -264,7 +264,7 @@ export default function StudentClassDetail() {
                 <div className="flex items-center justify-between mb-2">
                   <div>
                     <h3 className="text-[16px] font-semibold text-[#111]">Scan QR</h3>
-                    <p className="text-[12px] text-[#666] mt-1">Scan the code displayed by your instructor.</p>
+                    <p className="text-[12px] text-[#666] mt-1">Scan the code or upload a QR image from your instructor.</p>
                   </div>
                   <div className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 border border-black/5">
                     <ScanLine className="w-4 h-4 text-[#888]" />

@@ -1,5 +1,7 @@
 import { createApp } from '../src/app.js'
 import { config } from '../src/config/env.js'
+import { ensureDatabasePatches } from '../src/db/migrate.js'
+import { ensureAdminAccount } from '../src/services/admin-bootstrap.js'
 
 if (!config.databaseUrl) {
   console.error('DATABASE_URL is not set. Copy .env.example to .env or set it in your shell.')
@@ -11,6 +13,9 @@ const instructorEmail = `smoke_instructor_${Date.now()}@example.local`
 const studentEmail = `smoke_student_${Date.now()}@example.local`
 const instructorName = `Smoke Instructor ${suffix}`
 const studentName = `Smoke Student ${suffix}`
+
+await ensureDatabasePatches()
+await ensureAdminAccount()
 
 const app = createApp({ allowedOrigins: [] })
 
@@ -64,7 +69,43 @@ const server = app.listen(0, async () => {
       process.exit(1)
     }
 
-    const instructorToken = instructorRegister.payload.token
+    const instructorUserId = instructorRegister.payload?.user?.id
+
+    const adminLogin = await requestJson('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email: config.adminEmail, password: config.adminPassword }),
+    })
+
+    if (adminLogin.response.status !== 200 || !adminLogin.payload?.token) {
+      console.error('Admin login failed:', adminLogin.response.status, adminLogin.payload)
+      process.exit(1)
+    }
+
+    const approveInstructor = await requestJson(
+      `/admin/instructors/${instructorUserId}/approve`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ status: 'approved' }),
+      },
+      adminLogin.payload.token
+    )
+
+    if (approveInstructor.response.status !== 200) {
+      console.error('Instructor approval failed:', approveInstructor.response.status, approveInstructor.payload)
+      process.exit(1)
+    }
+
+    const instructorLogin = await requestJson('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email: instructorEmail, password: 'Instructor123!' }),
+    })
+
+    if (instructorLogin.response.status !== 200 || !instructorLogin.payload?.token) {
+      console.error('Instructor login failed:', instructorLogin.response.status, instructorLogin.payload)
+      process.exit(1)
+    }
+
+    const instructorToken = instructorLogin.payload.token
     const studentToken = studentRegister.payload.token
 
     const classCreate = await requestJson(

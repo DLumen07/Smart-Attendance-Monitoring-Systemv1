@@ -10,7 +10,17 @@ A simple attendance monitoring system with a React + Tailwind frontend on port 5
 ## Features
 
 - Instructor and Student roles
-- Login/register with JWT auth
+- Admin role with instructor approval workflow
+- Login/register with JWT auth and rate limiting
+- **Proper session handling**: Only one user can be authenticated per browser (shared across tabs); attempting to login/register a different account requires logging out first
+- Register module with split name fields (first, middle, last)
+- Strong password requirements: 10+ characters with uppercase, lowercase, number, and symbol
+- Comprehensive input sanitization: control character stripping, whitespace normalization
+- Email validation requiring at least one letter (prevents numeric-only addresses)
+- Register input validation for names, email, and password
+- Password confirmation and password visibility toggles on registration
+- Rate limiting on auth endpoints (5 register attempts, 10 login attempts, 5 password-reset per 15 minutes)
+- Admin activity logs, platform analytics, and backup/restore controls
 - Instructor class creation and session management
 - QR/code/manual attendance check-in
 - Instructor review of pending attendance
@@ -97,6 +107,7 @@ That’s it. Open the Vercel URL to access the demo.
 
 - Frontend runs on port 5000.
 - Node API runs on port 3001 for `/auth`, `/student`, and `/instructor` routes.
+- Admin features are exposed via `/admin` routes (admin role only).
 - Postgres runs on port 5432 and seeds from `backend/node-api/sql/schema.sql` on first start.
 - Manual self-attendance is supported for open sessions.
 
@@ -119,5 +130,9 @@ That’s it. Open the Vercel URL to access the demo.
 - Consecutive absence alerts fire whenever the last three sessions are absent.
 - Instructor QR codes can be downloaded as PNG/JPG while student session codes remain hidden.
 - Instructor dashboard Agenda card now uses class schedules for today.
-- Registration now enforces strict full-name and email validation to prevent duplicate accounts.
+- Registration now enforces strict name-part and email validation to prevent duplicate accounts.
 - Full-name duplicates are blocked globally during registration.
+- Registration now supports firstName, middleName, and lastName inputs (with legacy fullName fallback for compatibility).
+- Registration requires matching password and confirm password when confirm password is supplied.
+- Instructor registrations are now created as pending and require admin approval before login.
+- Added admin dashboard module for instructor approvals, activity logs, analytics, and backup/restore.
