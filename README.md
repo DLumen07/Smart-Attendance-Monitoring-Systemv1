@@ -14,6 +14,7 @@ A simple attendance monitoring system with a React + Tailwind frontend on port 5
 - Login/register with JWT auth and rate limiting
 - **Proper session handling**: Only one user can be authenticated per browser (shared across tabs); attempting to login/register a different account requires logging out first
 - Register module with split name fields (first, middle, last)
+- Student registration captures year level, program/department, section, and student ID
 - Strong password requirements: 10+ characters with uppercase, lowercase, number, and symbol
 - Comprehensive input sanitization: control character stripping, whitespace normalization
 - Email validation requiring at least one letter (prevents numeric-only addresses)
@@ -95,9 +96,11 @@ Render’s free tier sleeps after inactivity, so the first request can be slow.
 ### 3) Frontend (Vercel)
 
 - Import the same repo into Vercel.
-- Root directory: `frontend`
-- Build command: `npm run build`
-- Output directory: `dist`
+- If you deploy from the repo root, `vercel.json` will build the frontend and add SPA rewrites (no extra settings needed).
+- If you prefer manual settings, use:
+   - Root directory: `frontend`
+   - Build command: `npm run build`
+   - Output directory: `dist`
 - Environment variable:
    - `VITE_API_BASE_URL` = your Render API URL (for example, `https://your-api.onrender.com`)
 
