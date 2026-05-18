@@ -33,7 +33,6 @@ import {
    MousePointerClick,
    Download
 } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../auth/AuthContext'
 import { jsPDF } from 'jspdf'
@@ -42,34 +41,28 @@ import autoTable from 'jspdf-autotable/es'
 // --- Dribbble / Bento Style Shared Components ---
 
 function Modal({ isOpen, onClose, title, children }) {
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+   if (!isOpen) {
+      return null
+   }
+
+   return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+         <button
+            type="button"
             onClick={onClose}
             className="absolute inset-0 bg-ink/20 backdrop-blur-sm"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.96, y: 10 }}
-            className="relative z-10 w-full max-w-md overflow-hidden rounded-[24px] bg-white shadow-2xl"
-          >
+            aria-label="Close modal"
+         />
+         <div className="relative z-10 w-full max-w-md overflow-hidden rounded-[24px] bg-white shadow-2xl">
             <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-white text-ink">
-              <h3 className="font-bold tracking-tight">{title}</h3>
+               <h3 className="font-bold tracking-tight">{title}</h3>
             </div>
             <div className="p-8 bg-white">
-              {children}
+               {children}
             </div>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
-  )
+         </div>
+      </div>
+   )
 }
 
 function Card({ children, className = '', noPadding = false }) {
@@ -580,9 +573,109 @@ export default function InstructorDashboard() {
       link.click()
    }
 
+   const createClassModal = (
+      <Modal isOpen={isCreateClassModalOpen} onClose={() => setIsCreateClassModalOpen(false)} title="Create New Class">
+         <form onSubmit={createClass} className="space-y-5">
+            <div>
+               <label className="block mb-1.5 text-[11px] font-bold text-[#1c1c1c] uppercase tracking-wider">Class Name</label>
+               <input
+                  required
+                  autoFocus
+                  value={newClassName}
+                  onChange={(e) => setNewClassName(e.target.value)}
+                  placeholder="e.g. CS-101 Fall"
+                  className="w-full h-10 rounded-xl bg-[#f4f2ee] px-3 text-xs font-semibold text-[#1c1c1c] focus:bg-white focus:ring-2 focus:ring-[#5C7C6D] shadow-inner focus:outline-none transition-all placeholder:text-slate-400 placeholder:font-normal"
+               />
+            </div>
+
+            <div>
+               <div className="flex items-center justify-between mb-2">
+                  <label className="block text-[11px] font-bold text-[#1c1c1c] uppercase tracking-wider">Class Schedule</label>
+                  <button
+                     type="button"
+                     onClick={() => setNewClassSchedules([...newClassSchedules, { dayOfWeek: 'Monday', startTime: '09:00', endTime: '10:30' }])}
+                     className="text-[10px] font-bold text-[#5c7c6d] hover:text-[#4a6357] uppercase tracking-wider bg-[#5c7c6d]/10 hover:bg-[#5c7c6d]/20 px-2 py-1 rounded-md transition-colors flex items-center gap-1"
+                  >
+                     <Plus className="w-3 h-3" /> Add Time
+                  </button>
+               </div>
+
+               <div className="space-y-2 max-h-[160px] overflow-y-auto custom-scrollbar pr-1">
+                  {newClassSchedules.map((sched, idx) => (
+                     <div key={idx} className="flex items-center gap-2 bg-gray-50 border border-gray-100 p-2 rounded-xl">
+                        <select
+                           value={sched.dayOfWeek}
+                           onChange={(e) => {
+                              const newScheds = [...newClassSchedules]
+                              newScheds[idx].dayOfWeek = e.target.value
+                              setNewClassSchedules(newScheds)
+                           }}
+                           className="h-8 rounded-lg bg-white border border-gray-200 px-2 text-xs font-medium text-gray-700 focus:outline-none focus:border-[#5c7c6d] flex-1 min-w-[90px]"
+                        >
+                           {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((d) => (
+                              <option key={d} value={d}>{d}</option>
+                           ))}
+                        </select>
+                        <input
+                           type="time"
+                           value={sched.startTime}
+                           onChange={(e) => {
+                              const newScheds = [...newClassSchedules]
+                              newScheds[idx].startTime = e.target.value
+                              setNewClassSchedules(newScheds)
+                           }}
+                           className="h-8 rounded-lg bg-white border border-gray-200 px-2 text-xs font-medium text-gray-700 focus:outline-none focus:border-[#5c7c6d] w-[95px]"
+                        />
+                        <span className="text-gray-400 text-xs font-medium">to</span>
+                        <input
+                           type="time"
+                           value={sched.endTime}
+                           onChange={(e) => {
+                              const newScheds = [...newClassSchedules]
+                              newScheds[idx].endTime = e.target.value
+                              setNewClassSchedules(newScheds)
+                           }}
+                           className="h-8 rounded-lg bg-white border border-gray-200 px-2 text-xs font-medium text-gray-700 focus:outline-none focus:border-[#5c7c6d] w-[95px]"
+                        />
+                        {newClassSchedules.length > 1 && (
+                           <button
+                              type="button"
+                              onClick={() => {
+                                 const newScheds = [...newClassSchedules]
+                                 newScheds.splice(idx, 1)
+                                 setNewClassSchedules(newScheds)
+                              }}
+                              className="w-8 h-8 flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0"
+                           >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                           </button>
+                        )}
+                     </div>
+                  ))}
+               </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-gray-100 mt-4">
+               <Button label="Cancel" onClick={() => setIsCreateClassModalOpen(false)} variant="ghost" className="h-8 text-xs font-bold" />
+               <Button label="Add Class" onClick={createClass} className="bg-[#1c1c1c] hover:bg-[#2c2c2c] text-white h-8 text-xs font-bold px-4" />
+            </div>
+         </form>
+      </Modal>
+   )
+
    // --- Render Class Directory ---
   if (navContext?.activeNav === 'classes' && !selectedClass) {
-    return <InstructorClasses classes={classes} handleSelectClass={handleSelectClass} setIsCreateClassModalOpen={setIsCreateClassModalOpen} loadClasses={loadClasses} />
+      return (
+         <>
+            <InstructorClasses
+               classes={classes}
+               handleSelectClass={handleSelectClass}
+               setIsCreateClassModalOpen={setIsCreateClassModalOpen}
+               loadClasses={loadClasses}
+            />
+            {createClassModal}
+         </>
+      )
   }
 
   // --- Render Global View (All Classes) ---
@@ -1013,93 +1106,7 @@ export default function InstructorDashboard() {
               </Card>
          </div>
 
-         <Modal isOpen={isCreateClassModalOpen} onClose={() => setIsCreateClassModalOpen(false)} title="Create New Class">
-           <form onSubmit={createClass} className="space-y-5">
-             <div>
-               <label className="block mb-1.5 text-[11px] font-bold text-[#1c1c1c] uppercase tracking-wider">Class Name</label>
-               <input
-                 required
-                 autoFocus
-                 value={newClassName}
-                 onChange={(e) => setNewClassName(e.target.value)}
-                 placeholder="e.g. CS-101 Fall"
-                 className="w-full h-10 rounded-xl bg-[#f4f2ee] px-3 text-xs font-semibold text-[#1c1c1c] focus:bg-white focus:ring-2 focus:ring-[#5C7C6D] shadow-inner focus:outline-none transition-all placeholder:text-slate-400 placeholder:font-normal"
-               />
-             </div>
-
-             <div>
-               <div className="flex items-center justify-between mb-2">
-                 <label className="block text-[11px] font-bold text-[#1c1c1c] uppercase tracking-wider">Class Schedule</label>
-                 <button 
-                    type="button" 
-                    onClick={() => setNewClassSchedules([...newClassSchedules, { dayOfWeek: 'Monday', startTime: '09:00', endTime: '10:30' }])}
-                    className="text-[10px] font-bold text-[#5c7c6d] hover:text-[#4a6357] uppercase tracking-wider bg-[#5c7c6d]/10 hover:bg-[#5c7c6d]/20 px-2 py-1 rounded-md transition-colors flex items-center gap-1"
-                 >
-                    <Plus className="w-3 h-3" /> Add Time
-                 </button>
-               </div>
-               
-               <div className="space-y-2 max-h-[160px] overflow-y-auto custom-scrollbar pr-1">
-                 {newClassSchedules.map((sched, idx) => (
-                    <div key={idx} className="flex items-center gap-2 bg-gray-50 border border-gray-100 p-2 rounded-xl">
-                      <select
-                        value={sched.dayOfWeek}
-                        onChange={(e) => {
-                          const newScheds = [...newClassSchedules];
-                          newScheds[idx].dayOfWeek = e.target.value;
-                          setNewClassSchedules(newScheds);
-                        }}
-                        className="h-8 rounded-lg bg-white border border-gray-200 px-2 text-xs font-medium text-gray-700 focus:outline-none focus:border-[#5c7c6d] flex-1 min-w-[90px]"
-                      >
-                        {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(d => (
-                          <option key={d} value={d}>{d}</option>
-                        ))}
-                      </select>
-                      <input 
-                        type="time" 
-                        value={sched.startTime}
-                        onChange={(e) => {
-                          const newScheds = [...newClassSchedules];
-                          newScheds[idx].startTime = e.target.value;
-                          setNewClassSchedules(newScheds);
-                        }}
-                        className="h-8 rounded-lg bg-white border border-gray-200 px-2 text-xs font-medium text-gray-700 focus:outline-none focus:border-[#5c7c6d] w-[95px]"
-                      />
-                      <span className="text-gray-400 text-xs font-medium">to</span>
-                      <input 
-                        type="time" 
-                        value={sched.endTime}
-                        onChange={(e) => {
-                          const newScheds = [...newClassSchedules];
-                          newScheds[idx].endTime = e.target.value;
-                          setNewClassSchedules(newScheds);
-                        }}
-                        className="h-8 rounded-lg bg-white border border-gray-200 px-2 text-xs font-medium text-gray-700 focus:outline-none focus:border-[#5c7c6d] w-[95px]"
-                      />
-                      {newClassSchedules.length > 1 && (
-                        <button 
-                          type="button"
-                          onClick={() => {
-                            const newScheds = [...newClassSchedules];
-                            newScheds.splice(idx, 1);
-                            setNewClassSchedules(newScheds);
-                          }}
-                          className="w-8 h-8 flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0"
-                        >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                        </button>
-                      )}
-                    </div>
-                 ))}
-               </div>
-             </div>
-
-             <div className="flex justify-end gap-2 pt-2 border-t border-gray-100 mt-4">
-               <Button label="Cancel" onClick={() => setIsCreateClassModalOpen(false)} variant="ghost" className="h-8 text-xs font-bold" />
-               <Button label="Add Class" onClick={createClass} className="bg-[#1c1c1c] hover:bg-[#2c2c2c] text-white h-8 text-xs font-bold px-4" />
-             </div>
-           </form>
-         </Modal>
+             {createClassModal}
       </div>
     )
   }
