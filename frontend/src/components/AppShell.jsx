@@ -128,27 +128,44 @@ export default function AppShell({ children }) {
 
   return (
     <NavContext.Provider value={{ activeNav, setActiveNav }}>
-      <div className="relative min-h-screen bg-[#ebeae7] font-sans text-[#1c1c1c] antialiased lg:flex lg:h-screen lg:overflow-hidden pl-4 py-4 pr-0 gap-4 lg:pl-5 lg:py-5 lg:gap-5">
+      <div className="relative h-screen bg-[#ebeae7] font-sans text-[#1c1c1c] antialiased flex flex-col lg:flex-row lg:overflow-hidden lg:pl-5 lg:py-5 lg:pr-0 lg:gap-5">
 
-        {isMobileNavOpen && (
-          <button
-            type="button"
-            onClick={() => setIsMobileNavOpen(false)}
-            className="fixed inset-0 z-30 bg-[#1c1c1c]/30 backdrop-blur-sm lg:hidden"
-            aria-label="Close navigation"
-          />
-        )}
+        {/* Mobile Header (Clean & Native) */}
+        <div className="lg:hidden shrink-0 h-[64px] bg-white border-b border-slate-200/60 px-4 flex items-center justify-between shadow-[0_2px_14px_rgba(0,0,0,0.03)] z-20">
+            <div className="flex items-center gap-3">
+               <div className="h-9 w-9 rounded-[10px] bg-[#18563e] flex items-center justify-center text-white shadow-sm transform -rotate-3">
+                  <ScanLine className="h-4 w-4 transform rotate-3" />
+               </div>
+               <span className="font-extrabold text-[16px] tracking-tight text-ink pt-0.5">SAM</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsMobileNavOpen(true)}
+              className="h-10 w-10 rounded-full bg-slate-50 border border-slate-200 text-slate-600 flex items-center justify-center hover:text-ink hover:bg-slate-100 transition-colors"
+              aria-label="Open navigation menu"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+        </div>
+
+        {/* Mobile Overlay Backdrop */}
+        <div 
+          className={`fixed inset-0 z-40 bg-[#1c1c1c]/20 backdrop-blur-[2px] transition-opacity duration-300 lg:hidden ${isMobileNavOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          onClick={() => setIsMobileNavOpen(false)}
+          aria-hidden="true"
+        />
         
         {/* Expanded Sidebar */}
-      <aside
-        className={
-          'w-[250px] px-4 bg-white rounded-[2rem] flex flex-col py-5 shadow-sm justify-between shrink-0 border border-slate-200/60 ' +
-          'transition-[width,padding,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ' +
-          (showCompactNav ? 'lg:w-[92px] lg:px-3 ' : 'lg:w-[250px] lg:px-4 ') +
-          (isMobileNavOpen ? 'translate-x-0 ' : '-translate-x-full ') +
-          'fixed left-4 top-4 bottom-4 z-40 lg:static lg:translate-x-0 lg:top-auto lg:bottom-auto'
-        }
-      >
+        <aside
+          className={
+            'bg-white flex flex-col justify-between shrink-0 ' +
+            'fixed top-0 bottom-0 left-0 z-50 w-[280px] px-5 py-6 shadow-2xl ' +
+            'transition-transform duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] lg:transition-[width,padding,transform] lg:duration-500 ' +
+            (isMobileNavOpen ? 'translate-x-0 ' : '-translate-x-full ') +
+            'lg:static lg:translate-x-0 lg:shadow-sm lg:border lg:border-slate-200/60 lg:rounded-[2rem] lg:py-5 lg:h-full ' +
+            (showCompactNav ? 'lg:w-[92px] lg:px-3 ' : 'lg:w-[250px] lg:px-4 ')
+          }
+        >
         <div className="flex flex-col w-full gap-6">
           <div className={"pb-3 border-b border-slate-100 flex items-center gap-3 " + (showCompactNav ? 'justify-center px-0' : 'justify-between px-2')}>
             {!showCompactNav && <div className="h-9 w-9 rounded-[0.9rem] bg-[#1c1c1c] text-white flex items-center justify-center text-[10px] font-black tracking-widest shrink-0">SAM</div>}
@@ -159,7 +176,7 @@ export default function AppShell({ children }) {
             <button
               type="button"
               onClick={() => {
-                if (isMobileNavOpen) {
+                if (window.innerWidth < 1024) {
                   setIsMobileNavOpen(false)
                   return
                 }
@@ -169,9 +186,10 @@ export default function AppShell({ children }) {
                 'h-9 w-9 rounded-[0.85rem] border border-slate-200 bg-white text-slate-500 hover:text-[#1c1c1c] hover:bg-slate-50 transition-colors flex items-center justify-center shrink-0 ' +
                 (showCompactNav ? '' : 'ml-auto')
               }
-              title={showCompactNav ? 'Expand sidebar' : 'Collapse sidebar'}
+              title={showCompactNav ? 'Expand sidebar' : 'Collapse/Close sidebar'}
             >
-              {showCompactNav ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+              <span className="lg:hidden"><PanelLeftClose className="h-4 w-4" /></span>
+              <span className="hidden lg:block">{showCompactNav ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}</span>
             </button>
           </div>
 
@@ -223,15 +241,7 @@ export default function AppShell({ children }) {
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
-          <button
-            type="button"
-            onClick={() => setIsMobileNavOpen(true)}
-            className="lg:hidden fixed top-5 left-5 z-20 h-11 w-11 rounded-full bg-white border border-slate-200 text-slate-600 shadow-sm hover:text-[#1c1c1c] hover:bg-slate-50 transition-colors flex items-center justify-center"
-            aria-label="Open navigation"
-          >
-            <PanelLeftOpen className="h-5 w-5" />
-          </button>
-          <div className="flex-1 overflow-y-auto custom-scrollbar animate-in fade-in duration-300 pr-4 lg:pr-5">
+          <div className="flex-1 overflow-y-auto custom-scrollbar animate-in fade-in duration-300 p-4 lg:p-0 lg:pr-5">
            {children}
         </div>
       </main>
