@@ -14,6 +14,7 @@ export default function AppShell({ children }) {
   
   const [activeNav, setActiveNav] = useState('dashboard')
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
 
   const onLogout = () => {
     logout()
@@ -22,6 +23,7 @@ export default function AppShell({ children }) {
 
   const handleNavClick = (navItem) => {
     setActiveNav(navItem)
+    setIsMobileNavOpen(false)
     if (navItem === 'dashboard') {
       if (user?.role === 'admin') {
         navigate('/admin')
@@ -55,6 +57,10 @@ export default function AppShell({ children }) {
   }
 
   useEffect(() => {
+    setIsMobileNavOpen(false)
+  }, [location.pathname])
+
+  useEffect(() => {
     if (user?.role !== 'student') {
       return
     }
@@ -77,6 +83,7 @@ export default function AppShell({ children }) {
   }, [location.pathname, user?.role])
 
   const isAuthPage = ['/login', '/register', '/forgot-password', '/reset-password'].includes(location.pathname)
+  const showCompactNav = isSidebarCollapsed && !isMobileNavOpen
 
   if (isAuthPage) {
     return (
@@ -102,15 +109,15 @@ export default function AppShell({ children }) {
             isActive
               ? 'bg-[#1c1c1c] text-white shadow-[0_8px_20px_rgba(0,0,0,0.15)]'
               : 'text-slate-500 hover:text-[#1c1c1c] hover:bg-slate-100'
-          } ${isSidebarCollapsed ? 'justify-center px-0' : 'justify-start gap-3 px-4'}`
+          } ${showCompactNav ? 'justify-center px-0' : 'justify-start gap-3 px-4'}`
         }
-        title={isSidebarCollapsed ? label : undefined}
+        title={showCompactNav ? label : undefined}
       >
         <Icon className="h-5 w-5 shrink-0" />
         <span
           className={
             'text-[13px] font-black tracking-wide uppercase whitespace-nowrap overflow-hidden transition-all duration-300 ' +
-            (isSidebarCollapsed ? 'max-w-0 opacity-0 -translate-x-1 ml-0' : 'max-w-[140px] opacity-100 translate-x-0 ml-0')
+            (showCompactNav ? 'max-w-0 opacity-0 -translate-x-1 ml-0' : 'max-w-[140px] opacity-100 translate-x-0 ml-0')
           }
         >
           {label}
@@ -121,27 +128,50 @@ export default function AppShell({ children }) {
 
   return (
     <NavContext.Provider value={{ activeNav, setActiveNav }}>
-      <div className="flex h-screen bg-[#ebeae7] font-sans text-[#1c1c1c] antialiased overflow-hidden pl-4 py-4 pr-0 gap-4 lg:pl-5 lg:py-5 lg:gap-5">
+      <div className="relative min-h-screen bg-[#ebeae7] font-sans text-[#1c1c1c] antialiased lg:flex lg:h-screen lg:overflow-hidden pl-4 py-4 pr-0 gap-4 lg:pl-5 lg:py-5 lg:gap-5">
+
+        {isMobileNavOpen && (
+          <button
+            type="button"
+            onClick={() => setIsMobileNavOpen(false)}
+            className="fixed inset-0 z-30 bg-[#1c1c1c]/30 backdrop-blur-sm lg:hidden"
+            aria-label="Close navigation"
+          />
+        )}
         
         {/* Expanded Sidebar */}
-      <aside className={(isSidebarCollapsed ? 'w-[92px] px-3 ' : 'w-[250px] px-4 ') + 'bg-white rounded-[2rem] flex flex-col py-5 shadow-sm justify-between z-20 shrink-0 border border-slate-200/60 transition-[width,padding] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]'}>
+      <aside
+        className={
+          'w-[250px] px-4 bg-white rounded-[2rem] flex flex-col py-5 shadow-sm justify-between shrink-0 border border-slate-200/60 ' +
+          'transition-[width,padding,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ' +
+          (showCompactNav ? 'lg:w-[92px] lg:px-3 ' : 'lg:w-[250px] lg:px-4 ') +
+          (isMobileNavOpen ? 'translate-x-0 ' : '-translate-x-full ') +
+          'fixed left-4 top-4 bottom-4 z-40 lg:static lg:translate-x-0 lg:top-auto lg:bottom-auto'
+        }
+      >
         <div className="flex flex-col w-full gap-6">
-          <div className={"pb-3 border-b border-slate-100 flex items-center gap-3 " + (isSidebarCollapsed ? 'justify-center px-0' : 'justify-between px-2')}>
-            {!isSidebarCollapsed && <div className="h-9 w-9 rounded-[0.9rem] bg-[#1c1c1c] text-white flex items-center justify-center text-[10px] font-black tracking-widest shrink-0">SAM</div>}
-            <div className={'overflow-hidden transition-all duration-300 ' + (isSidebarCollapsed ? 'max-w-0 opacity-0 -translate-x-1' : 'max-w-[200px] opacity-100 translate-x-0')}>
+          <div className={"pb-3 border-b border-slate-100 flex items-center gap-3 " + (showCompactNav ? 'justify-center px-0' : 'justify-between px-2')}>
+            {!showCompactNav && <div className="h-9 w-9 rounded-[0.9rem] bg-[#1c1c1c] text-white flex items-center justify-center text-[10px] font-black tracking-widest shrink-0">SAM</div>}
+            <div className={'overflow-hidden transition-all duration-300 ' + (showCompactNav ? 'max-w-0 opacity-0 -translate-x-1' : 'max-w-[200px] opacity-100 translate-x-0')}>
               <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black whitespace-nowrap">Workspace</p>
               <h2 className="text-[14px] font-black tracking-tight mt-1 text-[#1c1c1c] whitespace-nowrap overflow-hidden text-ellipsis">Smart Attendance Monitoring</h2>
             </div>
             <button
               type="button"
-              onClick={() => setIsSidebarCollapsed((prev) => !prev)}
+              onClick={() => {
+                if (isMobileNavOpen) {
+                  setIsMobileNavOpen(false)
+                  return
+                }
+                setIsSidebarCollapsed((prev) => !prev)
+              }}
               className={
                 'h-9 w-9 rounded-[0.85rem] border border-slate-200 bg-white text-slate-500 hover:text-[#1c1c1c] hover:bg-slate-50 transition-colors flex items-center justify-center shrink-0 ' +
-                (isSidebarCollapsed ? '' : 'ml-auto')
+                (showCompactNav ? '' : 'ml-auto')
               }
-              title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              title={showCompactNav ? 'Expand sidebar' : 'Collapse sidebar'}
             >
-              {isSidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+              {showCompactNav ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
             </button>
           </div>
 
@@ -160,30 +190,30 @@ export default function AppShell({ children }) {
                 activeNav === 'settings'
                   ? 'bg-slate-100 text-[#1c1c1c]'
                   : 'text-slate-500 hover:text-[#1c1c1c] hover:bg-slate-50'
-              } ${isSidebarCollapsed ? 'justify-center px-0' : 'justify-start gap-3 px-4'}`
+              } ${showCompactNav ? 'justify-center px-0' : 'justify-start gap-3 px-4'}`
             }
-            title={isSidebarCollapsed ? 'Settings' : undefined}
+            title={showCompactNav ? 'Settings' : undefined}
           >
              <Settings className="h-5 w-5" />
-             <span className={'text-[12px] font-black tracking-wide uppercase whitespace-nowrap overflow-hidden transition-all duration-300 ' + (isSidebarCollapsed ? 'max-w-0 opacity-0 -translate-x-1' : 'max-w-[120px] opacity-100 translate-x-0')}>
+             <span className={'text-[12px] font-black tracking-wide uppercase whitespace-nowrap overflow-hidden transition-all duration-300 ' + (showCompactNav ? 'max-w-0 opacity-0 -translate-x-1' : 'max-w-[120px] opacity-100 translate-x-0')}>
                Settings
              </span>
           </button>
           <button
             onClick={onLogout}
-            className={'w-full flex items-center h-11 rounded-[0.9rem] text-slate-500 hover:text-rose-500 hover:bg-rose-50 transition-colors text-left ' + (isSidebarCollapsed ? 'justify-center px-0' : 'justify-start gap-3 px-4')}
-            title={isSidebarCollapsed ? 'Logout' : undefined}
+            className={'w-full flex items-center h-11 rounded-[0.9rem] text-slate-500 hover:text-rose-500 hover:bg-rose-50 transition-colors text-left ' + (showCompactNav ? 'justify-center px-0' : 'justify-start gap-3 px-4')}
+            title={showCompactNav ? 'Logout' : undefined}
           >
             <LogOut className="h-5 w-5" />
-            <span className={'text-[12px] font-black tracking-wide uppercase whitespace-nowrap overflow-hidden transition-all duration-300 ' + (isSidebarCollapsed ? 'max-w-0 opacity-0 -translate-x-1' : 'max-w-[120px] opacity-100 translate-x-0')}>
+            <span className={'text-[12px] font-black tracking-wide uppercase whitespace-nowrap overflow-hidden transition-all duration-300 ' + (showCompactNav ? 'max-w-0 opacity-0 -translate-x-1' : 'max-w-[120px] opacity-100 translate-x-0')}>
               Logout
             </span>
           </button>
-          <div className={'flex items-center px-3 py-2 mt-1 rounded-[0.9rem] bg-[#f8f7f5] border border-slate-200/70 transition-all duration-300 ' + (isSidebarCollapsed ? 'justify-center' : 'gap-3')}>
+          <div className={'flex items-center px-3 py-2 mt-1 rounded-[0.9rem] bg-[#f8f7f5] border border-slate-200/70 transition-all duration-300 ' + (showCompactNav ? 'justify-center' : 'gap-3')}>
             <div className="h-9 w-9 rounded-full bg-slate-900 shadow-sm flex items-center justify-center text-white font-bold text-xs uppercase overflow-hidden ring-[3px] ring-white">
               {user?.fullName?.substring(0, 2) || (user?.role === 'instructor' ? 'IN' : 'ST')}
             </div>
-            <div className={'min-w-0 overflow-hidden transition-all duration-300 ' + (isSidebarCollapsed ? 'max-w-0 opacity-0 -translate-x-1' : 'max-w-[120px] opacity-100 translate-x-0')}>
+            <div className={'min-w-0 overflow-hidden transition-all duration-300 ' + (showCompactNav ? 'max-w-0 opacity-0 -translate-x-1' : 'max-w-[120px] opacity-100 translate-x-0')}>
                 <p className="text-[11px] font-black text-[#1c1c1c] truncate">{user?.fullName || 'User'}</p>
                 <p className="text-[9px] uppercase tracking-widest font-black text-slate-400">{user?.role || 'member'}</p>
               </div>
@@ -193,6 +223,14 @@ export default function AppShell({ children }) {
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
+          <button
+            type="button"
+            onClick={() => setIsMobileNavOpen(true)}
+            className="lg:hidden fixed top-5 left-5 z-20 h-11 w-11 rounded-full bg-white border border-slate-200 text-slate-600 shadow-sm hover:text-[#1c1c1c] hover:bg-slate-50 transition-colors flex items-center justify-center"
+            aria-label="Open navigation"
+          >
+            <PanelLeftOpen className="h-5 w-5" />
+          </button>
           <div className="flex-1 overflow-y-auto custom-scrollbar animate-in fade-in duration-300 pr-4 lg:pr-5">
            {children}
         </div>
