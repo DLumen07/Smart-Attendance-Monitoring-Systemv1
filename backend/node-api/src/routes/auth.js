@@ -65,6 +65,13 @@ const updateProfileSchema = z.object({
   email: z.string().max(254).optional(),
   currentPassword: z.string().max(128).optional(),
   newPassword: z.string().max(128).optional(),
+  parentName: z.string().max(120).optional(),
+  parentEmail: z.string().max(254).optional(),
+  parentPhone: z.string().max(24).optional(),
+  yearLevel: z.string().max(10).optional(),
+  program: z.string().max(80).optional(),
+  section: z.string().max(80).optional(),
+  studentId: z.string().max(20).optional(),
 })
 
 const normalizeName = (value) => normalizeWhitespace(value)
@@ -383,7 +390,20 @@ authRouter.post('/login', loginRateLimit, async (request, response) => {
 authRouter.get('/me', requireAuth, async (request, response) => {
   try {
     const result = await query(
-      'SELECT id, name AS "fullName", email, role, approval_status AS "approvalStatus" FROM users WHERE id = $1',
+      `SELECT id,
+              name AS "fullName",
+              email,
+              role,
+              approval_status AS "approvalStatus",
+              parent_name AS "parentName",
+              parent_email AS "parentEmail",
+              parent_phone AS "parentPhone",
+              year_level AS "yearLevel",
+              program,
+              section,
+              student_id AS "studentId"
+       FROM users
+       WHERE id = $1`,
       [request.user.id]
     )
 
@@ -410,8 +430,23 @@ authRouter.put('/me', requireAuth, async (request, response) => {
     const nextEmail = payload.email ? normalizeEmailValue(payload.email) : null
     const currentPassword = payload.currentPassword ? sanitizePassword(payload.currentPassword) : ''
     const newPassword = payload.newPassword ? sanitizePassword(payload.newPassword) : ''
+    const hasStudentPayload =
+      payload.parentName !== undefined
+      || payload.parentEmail !== undefined
+      || payload.parentPhone !== undefined
+      || payload.yearLevel !== undefined
+      || payload.program !== undefined
+      || payload.section !== undefined
+      || payload.studentId !== undefined
+    const nextParentName = payload.parentName !== undefined ? normalizeName(payload.parentName) : null
+    const nextParentEmail = payload.parentEmail !== undefined ? normalizeEmailValue(payload.parentEmail) : null
+    const nextParentPhone = payload.parentPhone !== undefined ? sanitizePhone(payload.parentPhone) : null
+    const nextYearLevel = payload.yearLevel !== undefined ? normalizeWhitespace(payload.yearLevel) : null
+    const nextProgram = payload.program !== undefined ? normalizeWhitespace(payload.program) : null
+    const nextSection = payload.section !== undefined ? normalizeSection(payload.section) : null
+    const nextStudentId = payload.studentId !== undefined ? sanitizeStudentId(payload.studentId) : null
 
-    if (!nextFullName && !nextEmail && !newPassword) {
+    if (!nextFullName && !nextEmail && !newPassword && !hasStudentPayload) {
       return response.status(422).json({ message: 'No changes submitted' })
     }
 
@@ -436,7 +471,21 @@ authRouter.put('/me', requireAuth, async (request, response) => {
     }
 
     const existing = await query(
-      'SELECT id, name, email, password, role, approval_status AS "approvalStatus" FROM users WHERE id = $1',
+      `SELECT id,
+              name,
+              email,
+              password,
+              role,
+              approval_status AS "approvalStatus",
+              parent_name AS "parentName",
+              parent_email AS "parentEmail",
+              parent_phone AS "parentPhone",
+              year_level AS "yearLevel",
+              program,
+              section,
+              student_id AS "studentId"
+       FROM users
+       WHERE id = $1`,
       [request.user.id]
     )
 
@@ -445,6 +494,36 @@ authRouter.put('/me', requireAuth, async (request, response) => {
     }
 
     const currentUser = existing.rows[0]
+
+    if (hasStudentPayload && currentUser.role !== 'student') {
+      return response.status(403).json({ message: 'Student details can only be updated by student accounts.' })
+    }
+
+    if (payload.parentName !== undefined && nextParentName && !isValidFullName(nextParentName, true)) {
+      return response.status(422).json({
+        message: 'Parent name must include first and last name and only letters, spaces, apostrophes, or hyphens.',
+      })
+    }
+
+    if (payload.parentEmail !== undefined && nextParentEmail && !isValidEmailAddress(nextParentEmail)) {
+      return response.status(422).json({ message: 'Parent email address is invalid.' })
+    }
+
+    if (payload.yearLevel !== undefined && !isValidYearLevel(nextYearLevel)) {
+      return response.status(422).json({ message: 'Year level is required.' })
+    }
+
+    if (payload.program !== undefined && !isValidProgram(nextProgram)) {
+      return response.status(422).json({ message: 'Program/department is required.' })
+    }
+
+    if (payload.section !== undefined && !isValidSection(nextSection)) {
+      return response.status(422).json({ message: 'Section/class group is required.' })
+    }
+
+    if (payload.studentId !== undefined && !isValidStudentId(nextStudentId)) {
+      return response.status(422).json({ message: 'Student ID must match 00-00-0000.' })
+    }
 
     if (nextEmail && nextEmail !== currentUser.email) {
       const emailConflict = await query('SELECT id FROM users WHERE email = $1 AND id <> $2', [nextEmail, currentUser.id])
@@ -467,6 +546,14 @@ authRouter.put('/me', requireAuth, async (request, response) => {
       }
     }
 
+    const currentParentName = currentUser.parentName || ''
+    const currentParentEmail = currentUser.parentEmail || ''
+    const currentParentPhone = currentUser.parentPhone || ''
+    const currentYearLevel = currentUser.yearLevel || ''
+    const currentProgram = currentUser.program || ''
+    const currentSection = currentUser.section || ''
+    const currentStudentId = currentUser.studentId || ''
+
     const updates = []
     const values = []
     let index = 1
@@ -487,6 +574,62 @@ authRouter.put('/me', requireAuth, async (request, response) => {
       values.push(hashed)
     }
 
+    if (payload.parentName !== undefined) {
+      const nextValue = nextParentName || ''
+      if (nextValue !== currentParentName) {
+        updates.push(`parent_name = $${index++}`)
+        values.push(nextValue || null)
+      }
+    }
+
+    if (payload.parentEmail !== undefined) {
+      const nextValue = nextParentEmail || ''
+      if (nextValue !== currentParentEmail) {
+        updates.push(`parent_email = $${index++}`)
+        values.push(nextValue || null)
+      }
+    }
+
+    if (payload.parentPhone !== undefined) {
+      const nextValue = nextParentPhone || ''
+      if (nextValue !== currentParentPhone) {
+        updates.push(`parent_phone = $${index++}`)
+        values.push(nextValue || null)
+      }
+    }
+
+    if (payload.yearLevel !== undefined) {
+      const nextValue = nextYearLevel || ''
+      if (nextValue !== currentYearLevel) {
+        updates.push(`year_level = $${index++}`)
+        values.push(nextValue || null)
+      }
+    }
+
+    if (payload.program !== undefined) {
+      const nextValue = nextProgram || ''
+      if (nextValue !== currentProgram) {
+        updates.push(`program = $${index++}`)
+        values.push(nextValue || null)
+      }
+    }
+
+    if (payload.section !== undefined) {
+      const nextValue = nextSection || ''
+      if (nextValue !== currentSection) {
+        updates.push(`section = $${index++}`)
+        values.push(nextValue || null)
+      }
+    }
+
+    if (payload.studentId !== undefined) {
+      const nextValue = nextStudentId || ''
+      if (nextValue !== currentStudentId) {
+        updates.push(`student_id = $${index++}`)
+        values.push(nextValue || null)
+      }
+    }
+
     if (updates.length === 0) {
       return response.status(422).json({ message: 'No changes detected' })
     }
@@ -494,7 +637,18 @@ authRouter.put('/me', requireAuth, async (request, response) => {
     values.push(currentUser.id)
     const updateResult = await query(
       `UPDATE users SET ${updates.join(', ')} WHERE id = $${index}
-       RETURNING id, name AS "fullName", email, role, approval_status AS "approvalStatus"`,
+       RETURNING id,
+                 name AS "fullName",
+                 email,
+                 role,
+                 approval_status AS "approvalStatus",
+                 parent_name AS "parentName",
+                 parent_email AS "parentEmail",
+                 parent_phone AS "parentPhone",
+                 year_level AS "yearLevel",
+                 program,
+                 section,
+                 student_id AS "studentId"`,
       values
     )
 
@@ -513,6 +667,7 @@ authRouter.put('/me', requireAuth, async (request, response) => {
         emailChanged: !!nextEmail && nextEmail !== currentUser.email,
         nameChanged: !!nextFullName && nextFullName !== currentUser.name,
         passwordChanged: !!newPassword,
+        studentDetailsChanged: hasStudentPayload,
       },
       ipAddress: meta.ipAddress,
       userAgent: meta.userAgent,

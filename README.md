@@ -27,7 +27,7 @@ A simple attendance monitoring system with a React + Tailwind frontend on port 5
 - Instructor review of pending attendance
 - Student attendance history
 - Password reset via email (SMTP)
-- User settings page for name, email, and password updates
+- User settings page for name, email, password, and student profile updates (year level, program, section, student ID, parent contacts)
 
 ## Setup
 
@@ -140,3 +140,4 @@ That’s it. Open the Vercel URL to access the demo.
 - Registration requires matching password and confirm password when confirm password is supplied.
 - Instructor registrations are now created as pending and require admin approval before login.
 - Added admin dashboard module for instructor approvals, activity logs, analytics, and backup/restore.
+- Student settings now validate and save academic + parent profile updates.
