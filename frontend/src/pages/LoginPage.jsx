@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import AuthLayout from '../auth/AuthLayout'
-import { Mail, Lock, Loader2, ArrowRight } from 'lucide-react'
+import { Mail, Lock, Loader2, ArrowRight, Eye, EyeOff } from 'lucide-react'
 
 export default function LoginPage() {
   const { login } = useAuth()
@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   const onSubmit = async (event) => {
     event.preventDefault()
@@ -31,6 +32,7 @@ export default function LoginPage() {
   }
 
   const input = 'w-full pl-11 pr-4 h-12 bg-slate-50/50 border border-slate-200 text-ink placeholder-slate-400 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all duration-200 text-[14px] font-medium'
+  const passwordInput = 'w-full pl-11 pr-12 h-12 bg-slate-50/50 border border-slate-200 text-ink placeholder-slate-400 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all duration-200 text-[14px] font-medium'
 
   return (
     <AuthLayout title="Welcome Back" subtitle="Please sign in to your account">
@@ -61,12 +63,20 @@ export default function LoginPage() {
             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input
               required
-              type="password"
-              className={input}
+              type={showPassword ? 'text' : 'password'}
+              className={passwordInput}
               placeholder="••••••••"
               value={form.password}
               onChange={(event) => setForm((prev) => ({ ...prev, password: event.target.value }))}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-ink transition-colors"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
           </div>
         </div>
 

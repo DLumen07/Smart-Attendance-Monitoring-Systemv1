@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import AuthLayout from '../auth/AuthLayout'
 import { apiRequest } from '../api/client'
 import { Link, useSearchParams } from 'react-router-dom'
-import { Mail, KeyRound, Lock, CheckCircle, Loader2 } from 'lucide-react'
+import { Mail, KeyRound, Lock, CheckCircle, Loader2, Eye, EyeOff } from 'lucide-react'
 
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams()
@@ -12,6 +12,7 @@ export default function ResetPasswordPage() {
   const [status, setStatus] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   const onSubmit = async (e) => {
     e.preventDefault()
@@ -56,6 +57,7 @@ export default function ResetPasswordPage() {
   }
 
   const input = 'w-full pl-11 pr-4 h-12 bg-slate-50/50 border border-slate-200 text-ink placeholder-slate-400 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all duration-200 text-[14px] font-medium'
+  const passwordInput = 'w-full pl-11 pr-12 h-12 bg-slate-50/50 border border-slate-200 text-ink placeholder-slate-400 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all duration-200 text-[14px] font-medium'
 
   return (
     <AuthLayout title="Confirm Reset" subtitle="Enter your reset code and new password">
@@ -78,7 +80,15 @@ export default function ResetPasswordPage() {
           <label className="block text-[13px] font-bold text-ink mb-2">New Password</label>
           <div className="relative">
              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-             <input required type="password" className={input} value={form.password} onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))} placeholder="At least 8 characters" />
+             <input required type={showPassword ? 'text' : 'password'} className={passwordInput} value={form.password} onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))} placeholder="At least 8 characters" />
+             <button
+               type="button"
+               onClick={() => setShowPassword((prev) => !prev)}
+               className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-ink transition-colors"
+               aria-label={showPassword ? 'Hide password' : 'Show password'}
+             >
+               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+             </button>
           </div>
         </div>
 
