@@ -10,6 +10,10 @@ CREATE TABLE IF NOT EXISTS users (
   parent_name VARCHAR(255) NULL,
   parent_email VARCHAR(255) NULL,
   parent_phone VARCHAR(50) NULL,
+  year_level VARCHAR(10) NULL,
+  program VARCHAR(80) NULL,
+  section VARCHAR(80) NULL,
+  student_id VARCHAR(20) NULL,
   reset_code VARCHAR(12) NULL,
   reset_code_expires_at TIMESTAMPTZ NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()

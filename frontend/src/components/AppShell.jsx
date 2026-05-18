@@ -44,6 +44,10 @@ export default function AppShell({ children }) {
       navigate('/instructor')
       return
     }
+    if (navItem === 'settings') {
+      navigate('/settings')
+      return
+    }
     toast.success(navItem.charAt(0).toUpperCase() + navItem.slice(1) + ' module activating soon!', {
       icon: '🚀',
       style: {
@@ -81,6 +85,12 @@ export default function AppShell({ children }) {
       setActiveNav('dashboard')
     }
   }, [location.pathname, user?.role])
+
+  useEffect(() => {
+    if (location.pathname.startsWith('/settings')) {
+      setActiveNav('settings')
+    }
+  }, [location.pathname])
 
   const isAuthPage = ['/login', '/register', '/forgot-password', '/reset-password'].includes(location.pathname)
   const showCompactNav = isSidebarCollapsed && !isMobileNavOpen

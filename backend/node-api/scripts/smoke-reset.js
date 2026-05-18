@@ -29,6 +29,10 @@ const server = app.listen(0, async () => {
         email,
         password,
         role: 'student',
+        yearLevel: '1st',
+        program: 'Computer Science',
+        section: 'BSCS-1A',
+        studentId: '12-34-5678',
       }),
     })
 

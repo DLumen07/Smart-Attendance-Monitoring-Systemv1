@@ -15,6 +15,10 @@ export default function RegisterPage() {
     password: '',
     confirmPassword: '',
     role: 'student',
+    yearLevel: '',
+    program: '',
+    section: '',
+    studentId: '',
     parentName: '',
     parentEmail: '',
     parentPhone: '',
@@ -30,9 +34,25 @@ export default function RegisterPage() {
   const plainInput = 'w-full px-5 h-14 bg-slate-50/70 border border-slate-200 text-ink placeholder-slate-400 rounded-[1.1rem] focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all duration-200 text-[15px] font-medium'
   const fieldErrorClass = 'border-rose-300 focus:ring-rose-200 focus:border-rose-400'
 
+  const YEAR_LEVEL_OPTIONS = ['1st', '2nd', '3rd', '4th']
+  const PROGRAM_OPTIONS = [
+    'Computer Science',
+    'Information Technology',
+    'Information Systems',
+    'Software Engineering',
+    'Computer Engineering',
+    'Data Science',
+    'Cybersecurity',
+    'Business Administration',
+    'Education',
+    'Nursing',
+  ]
+
   const sanitizeName = (value) => value.replace(/[^A-Za-z'\- ]+/g, '').replace(/\s+/g, ' ')
   const sanitizePhone = (value) => value.replace(/[^\d+\-()\s]/g, '')
   const sanitizeEmail = (value) => value.replace(/\s+/g, '')
+  const sanitizeSection = (value) => value.replace(/[^A-Za-z0-9\- ]+/g, '').replace(/\s+/g, ' ')
+  const sanitizeStudentId = (value) => value.replace(/[^\d-]/g, '')
 
   const validateName = (value, label) => {
     if (!value) return `${label} is required.`
@@ -61,16 +81,56 @@ export default function RegisterPage() {
     return ''
   }
 
-  const trimForm = () => ({
-    ...form,
-    firstName: form.firstName.trim().replace(/\s+/g, ' '),
-    middleName: form.middleName.trim().replace(/\s+/g, ' '),
-    lastName: form.lastName.trim().replace(/\s+/g, ' '),
-    email: form.email.trim().toLowerCase(),
-    parentName: form.parentName.trim().replace(/\s+/g, ' '),
-    parentEmail: form.parentEmail.trim().toLowerCase(),
-    parentPhone: sanitizePhone(form.parentPhone.trim()),
-  })
+  const validateYearLevel = (value) => {
+    if (!value) return 'Year level is required.'
+    if (!YEAR_LEVEL_OPTIONS.includes(value)) return 'Select a valid year level.'
+    return ''
+  }
+
+  const validateProgram = (value) => {
+    if (!value) return 'Program/department is required.'
+    if (!PROGRAM_OPTIONS.includes(value)) return 'Select a valid program.'
+    return ''
+  }
+
+  const validateSection = (value) => {
+    if (!value) return 'Section/class group is required.'
+    if (value.length > 80) return 'Section/class group is too long.'
+    if (!/^[A-Za-z0-9][A-Za-z0-9\- ]*$/.test(value)) return 'Section/class group contains invalid characters.'
+    return ''
+  }
+
+  const validateStudentId = (value) => {
+    if (!value) return 'Student ID is required.'
+    if (!/^\d{2}-\d{2}-\d{4}$/.test(value)) return 'Student ID must match 00-00-0000.'
+    return ''
+  }
+
+  const trimForm = () => {
+    const trimmed = {
+      ...form,
+      firstName: form.firstName.trim().replace(/\s+/g, ' '),
+      middleName: form.middleName.trim().replace(/\s+/g, ' '),
+      lastName: form.lastName.trim().replace(/\s+/g, ' '),
+      email: form.email.trim().toLowerCase(),
+      yearLevel: form.yearLevel.trim(),
+      program: form.program.trim(),
+      section: sanitizeSection(form.section.trim()),
+      studentId: sanitizeStudentId(form.studentId.trim()),
+      parentName: form.parentName.trim().replace(/\s+/g, ' '),
+      parentEmail: form.parentEmail.trim().toLowerCase(),
+      parentPhone: sanitizePhone(form.parentPhone.trim()),
+    }
+
+    if (trimmed.role !== 'student') {
+      trimmed.yearLevel = ''
+      trimmed.program = ''
+      trimmed.section = ''
+      trimmed.studentId = ''
+    }
+
+    return trimmed
+  }
 
   const validateForm = (cleaned) => {
     const nextErrors = {}
@@ -92,6 +152,20 @@ export default function RegisterPage() {
     const passwordError = validateStrongPassword(cleaned.password)
     if (passwordError) nextErrors.password = passwordError
     if (cleaned.password !== cleaned.confirmPassword) nextErrors.confirmPassword = 'Password and confirm password must match.'
+
+    if (cleaned.role === 'student') {
+      const yearLevelError = validateYearLevel(cleaned.yearLevel)
+      if (yearLevelError) nextErrors.yearLevel = yearLevelError
+
+      const programError = validateProgram(cleaned.program)
+      if (programError) nextErrors.program = programError
+
+      const sectionError = validateSection(cleaned.section)
+      if (sectionError) nextErrors.section = sectionError
+
+      const studentIdError = validateStudentId(cleaned.studentId)
+      if (studentIdError) nextErrors.studentId = studentIdError
+    }
 
     if (cleaned.parentEmail) {
       const parentEmailError = validateEmail(cleaned.parentEmail, 'Parent email')
@@ -255,8 +329,70 @@ export default function RegisterPage() {
             </div>
 
             {form.role === 'student' ? (
-              <div className="space-y-4 pt-1 mt-5 border-t border-slate-100 flex-1">
-                <p className="text-[12px] font-bold text-slate-400 uppercase tracking-wider mt-4">Parent/Guardian Info (Optional)</p>
+              <div className="space-y-5 pt-1 mt-5 border-t border-slate-100 flex-1">
+                <div className="space-y-3">
+                  <p className="text-[12px] font-bold text-slate-400 uppercase tracking-wider mt-4">Student Details</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[13px] font-bold text-ink mb-2">Year Level</label>
+                      <select
+                        className={`${plainInput} ${fieldErrors.yearLevel ? fieldErrorClass : ''}`}
+                        value={form.yearLevel}
+                        onChange={(e) => setForm((p) => ({ ...p, yearLevel: e.target.value }))}
+                      >
+                        <option value="">Select year level</option>
+                        {YEAR_LEVEL_OPTIONS.map((level) => (
+                          <option key={level} value={level}>{`${level} Year`}</option>
+                        ))}
+                      </select>
+                      {fieldErrors.yearLevel && <p className="mt-1 text-[12px] text-rose-600">{fieldErrors.yearLevel}</p>}
+                    </div>
+
+                    <div>
+                      <label className="block text-[13px] font-bold text-ink mb-2">Program/Department</label>
+                      <select
+                        className={`${plainInput} ${fieldErrors.program ? fieldErrorClass : ''}`}
+                        value={form.program}
+                        onChange={(e) => setForm((p) => ({ ...p, program: e.target.value }))}
+                      >
+                        <option value="">Select program</option>
+                        {PROGRAM_OPTIONS.map((program) => (
+                          <option key={program} value={program}>{program}</option>
+                        ))}
+                      </select>
+                      {fieldErrors.program && <p className="mt-1 text-[12px] text-rose-600">{fieldErrors.program}</p>}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[13px] font-bold text-ink mb-2">Section / Class Group</label>
+                      <input
+                        className={`${plainInput} ${fieldErrors.section ? fieldErrorClass : ''}`}
+                        placeholder="Section (e.g., BSCS-2A)"
+                        value={form.section}
+                        onChange={(e) => setForm((p) => ({ ...p, section: sanitizeSection(e.target.value) }))}
+                        onBlur={(e) => setForm((p) => ({ ...p, section: e.target.value.trim().replace(/\s+/g, ' ') }))}
+                      />
+                      {fieldErrors.section && <p className="mt-1 text-[12px] text-rose-600">{fieldErrors.section}</p>}
+                    </div>
+
+                    <div>
+                      <label className="block text-[13px] font-bold text-ink mb-2">Student ID</label>
+                      <input
+                        className={`${plainInput} ${fieldErrors.studentId ? fieldErrorClass : ''}`}
+                        placeholder="00-00-0000"
+                        value={form.studentId}
+                        onChange={(e) => setForm((p) => ({ ...p, studentId: sanitizeStudentId(e.target.value) }))}
+                      />
+                      <p className="mt-1 text-[11px] text-slate-500">Format: 00-00-0000</p>
+                      {fieldErrors.studentId && <p className="mt-1 text-[12px] text-rose-600">{fieldErrors.studentId}</p>}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4 pt-3 border-t border-slate-100">
+                  <p className="text-[12px] font-bold text-slate-400 uppercase tracking-wider mt-4">Parent/Guardian Info (Optional)</p>
                 <div>
                   <div className="relative">
                     <UserPlus className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -277,6 +413,7 @@ export default function RegisterPage() {
                     <input type="tel" className={input} placeholder="Parent Phone" value={form.parentPhone} onChange={(e) => setForm((p) => ({ ...p, parentPhone: sanitizePhone(e.target.value) }))} />
                   </div>
                   <p className="mt-1 text-[11px] text-slate-500">Allowed: digits, +, -, spaces, and parentheses.</p>
+                </div>
                 </div>
               </div>
             ) : (

@@ -68,12 +68,26 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
+  const updateProfile = async (payload) => {
+    const data = await apiRequest('/auth/me', {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    })
+
+    if (data?.token && data?.user) {
+      saveSession(data.token, data.user)
+    }
+
+    return data
+  }
+
   const value = useMemo(() => ({
     user,
     isAuthenticated: !!user,
     register,
     login,
     logout,
+    updateProfile,
   }), [user])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

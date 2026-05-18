@@ -27,6 +27,7 @@ A simple attendance monitoring system with a React + Tailwind frontend on port 5
 - Instructor review of pending attendance
 - Student attendance history
 - Password reset via email (SMTP)
+- User settings page for name, email, and password updates
 
 ## Setup
 

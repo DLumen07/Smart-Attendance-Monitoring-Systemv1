@@ -6,6 +6,7 @@ import { query } from '../db/index.js'
 import { config } from '../config/env.js'
 import { buildResetEmail, isEmailConfigured, sendEmail } from '../services/email.js'
 import { logActivity, requestMeta } from '../services/activity-log.js'
+import { requireAuth } from '../middleware/auth.js'
 
 const authRouter = Router()
 const authRateLimits = new Map()
@@ -48,6 +49,10 @@ const registerSchema = z.object({
   parentName: z.string().max(120).optional().default(''),
   parentEmail: z.string().max(254).optional().default(''),
   parentPhone: z.string().max(24).optional().default(''),
+  yearLevel: z.string().max(10).optional().default(''),
+  program: z.string().max(80).optional().default(''),
+  section: z.string().max(80).optional().default(''),
+  studentId: z.string().max(20).optional().default(''),
 })
 
 const loginSchema = z.object({
@@ -55,9 +60,34 @@ const loginSchema = z.object({
   password: z.string().min(1).max(128),
 })
 
+const updateProfileSchema = z.object({
+  fullName: z.string().max(120).optional(),
+  email: z.string().max(254).optional(),
+  currentPassword: z.string().max(128).optional(),
+  newPassword: z.string().max(128).optional(),
+})
+
 const normalizeName = (value) => normalizeWhitespace(value)
 const normalizeNamePart = (value) => normalizeWhitespace(value).replace(/[^A-Za-z'\- ]+/g, '')
 const sanitizePhone = (value) => stripControlChars(value).replace(/[^\d+\-()\s]/g, '').trim()
+const normalizeSection = (value) => normalizeWhitespace(value).replace(/[^A-Za-z0-9\- ]+/g, '')
+const sanitizeStudentId = (value) => stripControlChars(value).replace(/[^\d-]/g, '').trim()
+
+const YEAR_LEVEL_OPTIONS = ['1st', '2nd', '3rd', '4th']
+const PROGRAM_OPTIONS = [
+  'Computer Science',
+  'Information Technology',
+  'Information Systems',
+  'Software Engineering',
+  'Computer Engineering',
+  'Data Science',
+  'Cybersecurity',
+  'Business Administration',
+  'Education',
+  'Nursing',
+]
+const YEAR_LEVEL_SET = new Set(YEAR_LEVEL_OPTIONS)
+const PROGRAM_SET = new Set(PROGRAM_OPTIONS)
 
 const isValidNamePart = (value) => {
   if (!value) return false
@@ -81,6 +111,18 @@ const isValidEmailAddress = (value) => {
   if (!/[A-Za-z]/.test(value)) return false
   return z.string().email().safeParse(value).success
 }
+
+const isValidYearLevel = (value) => YEAR_LEVEL_SET.has(value)
+
+const isValidProgram = (value) => PROGRAM_SET.has(value)
+
+const isValidSection = (value) => {
+  if (!value) return false
+  if (value.length > 80) return false
+  return /^[A-Za-z0-9][A-Za-z0-9\- ]*$/.test(value)
+}
+
+const isValidStudentId = (value) => /^\d{2}-\d{2}-\d{4}$/.test(value)
 
 const isStrongPassword = (value) => {
   if (!value || value.length < 10 || value.length > 128) return false
@@ -107,6 +149,10 @@ authRouter.post('/register', registerRateLimit, async (request, response) => {
     let parentName = normalizeName(body.parentName)
     let parentEmail = normalizeEmailValue(body.parentEmail)
     let parentPhone = sanitizePhone(body.parentPhone)
+    let yearLevel = normalizeWhitespace(body.yearLevel)
+    let program = normalizeWhitespace(body.program)
+    let section = normalizeSection(body.section)
+    let studentId = sanitizeStudentId(body.studentId)
 
     let fullName = ''
     if (firstName || middleName || lastName) {
@@ -157,6 +203,24 @@ authRouter.post('/register', registerRateLimit, async (request, response) => {
       return response.status(422).json({ message: 'Password and confirm password do not match.' })
     }
 
+    if (role === 'student') {
+      if (!isValidYearLevel(yearLevel)) {
+        return response.status(422).json({ message: 'Year level is required.' })
+      }
+
+      if (!isValidProgram(program)) {
+        return response.status(422).json({ message: 'Program/department is required.' })
+      }
+
+      if (!isValidSection(section)) {
+        return response.status(422).json({ message: 'Section/class group is required.' })
+      }
+
+      if (!isValidStudentId(studentId)) {
+        return response.status(422).json({ message: 'Student ID must match 00-00-0000.' })
+      }
+    }
+
     const existing = await query('SELECT id FROM users WHERE email = $1', [email])
     if (existing.rows.length > 0) {
       return response.status(409).json({ message: 'Email already registered' })
@@ -171,6 +235,10 @@ authRouter.post('/register', registerRateLimit, async (request, response) => {
       parentName = ''
       parentEmail = ''
       parentPhone = ''
+      yearLevel = ''
+      program = ''
+      section = ''
+      studentId = ''
     }
 
     if (parentName && !isValidFullName(parentName, true)) {
@@ -185,8 +253,21 @@ authRouter.post('/register', registerRateLimit, async (request, response) => {
 
     const hashed = await bcrypt.hash(password, 10)
     const result = await query(
-      'INSERT INTO users (name, email, password, role, approval_status, parent_name, parent_email, parent_phone) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, name, email, role, approval_status AS "approvalStatus"',
-      [fullName, email, hashed, role, approvalStatus, parentName || null, parentEmail || null, parentPhone || null]
+      'INSERT INTO users (name, email, password, role, approval_status, parent_name, parent_email, parent_phone, year_level, program, section, student_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id, name, email, role, approval_status AS "approvalStatus"',
+      [
+        fullName,
+        email,
+        hashed,
+        role,
+        approvalStatus,
+        parentName || null,
+        parentEmail || null,
+        parentPhone || null,
+        yearLevel || null,
+        program || null,
+        section || null,
+        studentId || null,
+      ]
     )
 
     const user = result.rows[0]
@@ -293,6 +374,151 @@ authRouter.post('/login', loginRateLimit, async (request, response) => {
         approvalStatus: user.approvalStatus,
       },
     })
+  } catch (error) {
+    console.error(error)
+    response.status(500).json({ message: 'Internal server error' })
+  }
+})
+
+authRouter.get('/me', requireAuth, async (request, response) => {
+  try {
+    const result = await query(
+      'SELECT id, name AS "fullName", email, role, approval_status AS "approvalStatus" FROM users WHERE id = $1',
+      [request.user.id]
+    )
+
+    if (result.rows.length === 0) {
+      return response.status(404).json({ message: 'User not found' })
+    }
+
+    response.status(200).json({ user: result.rows[0] })
+  } catch (error) {
+    console.error(error)
+    response.status(500).json({ message: 'Internal server error' })
+  }
+})
+
+authRouter.put('/me', requireAuth, async (request, response) => {
+  try {
+    const parsed = updateProfileSchema.safeParse(request.body)
+    if (!parsed.success) {
+      return response.status(422).json({ message: 'Invalid profile payload' })
+    }
+
+    const payload = parsed.data
+    const nextFullName = payload.fullName ? normalizeName(payload.fullName) : null
+    const nextEmail = payload.email ? normalizeEmailValue(payload.email) : null
+    const currentPassword = payload.currentPassword ? sanitizePassword(payload.currentPassword) : ''
+    const newPassword = payload.newPassword ? sanitizePassword(payload.newPassword) : ''
+
+    if (!nextFullName && !nextEmail && !newPassword) {
+      return response.status(422).json({ message: 'No changes submitted' })
+    }
+
+    if (nextFullName && !isValidFullName(nextFullName, true)) {
+      return response.status(422).json({
+        message: 'Full name must include at least first and last name and only letters, spaces, apostrophes, or hyphens.',
+      })
+    }
+
+    if (nextEmail && !isValidEmailAddress(nextEmail)) {
+      return response.status(422).json({ message: 'Invalid email address.' })
+    }
+
+    if (newPassword && !isStrongPassword(newPassword)) {
+      return response.status(422).json({
+        message: 'Password must be at least 10 characters and include uppercase, lowercase, a number, and a symbol.',
+      })
+    }
+
+    if (newPassword && !currentPassword) {
+      return response.status(422).json({ message: 'Current password is required to set a new password.' })
+    }
+
+    const existing = await query(
+      'SELECT id, name, email, password, role, approval_status AS "approvalStatus" FROM users WHERE id = $1',
+      [request.user.id]
+    )
+
+    if (existing.rows.length === 0) {
+      return response.status(404).json({ message: 'User not found' })
+    }
+
+    const currentUser = existing.rows[0]
+
+    if (nextEmail && nextEmail !== currentUser.email) {
+      const emailConflict = await query('SELECT id FROM users WHERE email = $1 AND id <> $2', [nextEmail, currentUser.id])
+      if (emailConflict.rows.length > 0) {
+        return response.status(409).json({ message: 'Email already registered' })
+      }
+    }
+
+    if (nextFullName && nextFullName !== currentUser.name) {
+      const nameConflict = await query('SELECT id FROM users WHERE LOWER(name) = LOWER($1) AND id <> $2', [nextFullName, currentUser.id])
+      if (nameConflict.rows.length > 0) {
+        return response.status(409).json({ message: 'Full name already registered' })
+      }
+    }
+
+    if (newPassword) {
+      const match = await bcrypt.compare(currentPassword, currentUser.password)
+      if (!match) {
+        return response.status(401).json({ message: 'Current password is incorrect' })
+      }
+    }
+
+    const updates = []
+    const values = []
+    let index = 1
+
+    if (nextFullName && nextFullName !== currentUser.name) {
+      updates.push(`name = $${index++}`)
+      values.push(nextFullName)
+    }
+
+    if (nextEmail && nextEmail !== currentUser.email) {
+      updates.push(`email = $${index++}`)
+      values.push(nextEmail)
+    }
+
+    if (newPassword) {
+      const hashed = await bcrypt.hash(newPassword, 10)
+      updates.push(`password = $${index++}`)
+      values.push(hashed)
+    }
+
+    if (updates.length === 0) {
+      return response.status(422).json({ message: 'No changes detected' })
+    }
+
+    values.push(currentUser.id)
+    const updateResult = await query(
+      `UPDATE users SET ${updates.join(', ')} WHERE id = $${index}
+       RETURNING id, name AS "fullName", email, role, approval_status AS "approvalStatus"`,
+      values
+    )
+
+    const updatedUser = updateResult.rows[0]
+    const token = jwt.sign({ sub: updatedUser.id, email: updatedUser.email, role: updatedUser.role }, config.jwtSecret, {
+      expiresIn: '7d',
+    })
+
+    const meta = requestMeta(request)
+    await logActivity({
+      actorUserId: updatedUser.id,
+      action: 'auth.profile_update',
+      targetType: 'user',
+      targetId: String(updatedUser.id),
+      details: {
+        emailChanged: !!nextEmail && nextEmail !== currentUser.email,
+        nameChanged: !!nextFullName && nextFullName !== currentUser.name,
+        passwordChanged: !!newPassword,
+      },
+      ipAddress: meta.ipAddress,
+      userAgent: meta.userAgent,
+    }).catch(() => {})
+
+    response.status(200).json({ token, user: updatedUser })
   } catch (error) {
     console.error(error)
     response.status(500).json({ message: 'Internal server error' })

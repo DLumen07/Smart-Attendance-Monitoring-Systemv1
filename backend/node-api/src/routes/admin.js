@@ -139,7 +139,22 @@ adminRouter.get('/backup', async (request, response) => {
   try {
     const [users, classes, schedules, members, sessions, attendance, alerts] = await Promise.all([
       query(
-        `SELECT id, name, email, password, role, approval_status AS "approvalStatus", parent_name AS "parentName", parent_email AS "parentEmail", parent_phone AS "parentPhone", reset_code AS "resetCode", reset_code_expires_at AS "resetCodeExpiresAt", created_at AS "createdAt"
+        `SELECT id,
+          name,
+          email,
+          password,
+          role,
+          approval_status AS "approvalStatus",
+          parent_name AS "parentName",
+          parent_email AS "parentEmail",
+          parent_phone AS "parentPhone",
+          year_level AS "yearLevel",
+          program AS "program",
+          section AS "section",
+          student_id AS "studentId",
+          reset_code AS "resetCode",
+          reset_code_expires_at AS "resetCodeExpiresAt",
+          created_at AS "createdAt"
          FROM users
          ORDER BY id ASC`
       ),
@@ -206,8 +221,8 @@ adminRouter.post('/restore', async (request, response) => {
     await withTransaction(async (client) => {
       for (const row of users) {
         await client.query(
-          `INSERT INTO users (id, name, email, password, role, approval_status, parent_name, parent_email, parent_phone, reset_code, reset_code_expires_at, created_at)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, COALESCE($12::timestamptz, NOW()))
+          `INSERT INTO users (id, name, email, password, role, approval_status, parent_name, parent_email, parent_phone, year_level, program, section, student_id, reset_code, reset_code_expires_at, created_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, COALESCE($16::timestamptz, NOW()))
            ON CONFLICT (id) DO UPDATE
            SET name = EXCLUDED.name,
                email = EXCLUDED.email,
@@ -217,6 +232,10 @@ adminRouter.post('/restore', async (request, response) => {
                parent_name = EXCLUDED.parent_name,
                parent_email = EXCLUDED.parent_email,
                parent_phone = EXCLUDED.parent_phone,
+               year_level = EXCLUDED.year_level,
+               program = EXCLUDED.program,
+               section = EXCLUDED.section,
+               student_id = EXCLUDED.student_id,
                reset_code = EXCLUDED.reset_code,
                reset_code_expires_at = EXCLUDED.reset_code_expires_at`,
           [
@@ -229,6 +248,10 @@ adminRouter.post('/restore', async (request, response) => {
             row.parentName || null,
             row.parentEmail || null,
             row.parentPhone || null,
+            row.yearLevel || null,
+            row.program || null,
+            row.section || null,
+            row.studentId || null,
             row.resetCode || null,
             row.resetCodeExpiresAt || null,
             row.createdAt || null,

@@ -45,6 +45,7 @@ Notes:
 - Attendance alert emails (3 consecutive absences) require `ATTENDANCE_EMAIL_ENABLED=true`, SMTP settings, and parent emails on student records.
 - The `auth` routes now include register/login plus forgot/reset password with reset codes.
 - Register accepts split name fields (`firstName`, optional `middleName`, `lastName`) and also supports legacy `fullName` payloads.
+- Student registration also collects year level, program/department, section/class group, and student ID (format `00-00-0000`).
 - Register enforces backend sanitization and validation for name parts, email format, password length, and password/confirm-password matching when provided.
 - Instructor registrations are stored as `pending` and cannot sign in until approved by an admin.
 - Admin-only routes are available under `/admin` for:

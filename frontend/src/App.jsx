@@ -7,6 +7,7 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
+import SettingsPage from './pages/SettingsPage'
 import InstructorDashboard from './pages/instructor/InstructorDashboard'
 import StudentDashboard from './pages/student/StudentDashboard'
 import StudentClasses from './pages/student/StudentClasses'
@@ -89,6 +90,16 @@ export default function App() {
               <ProtectedRoute role="student">
                 <AppShell>
                   <StudentClassDetail />
+                </AppShell>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <AppShell>
+                  <SettingsPage />
                 </AppShell>
               </ProtectedRoute>
             }
